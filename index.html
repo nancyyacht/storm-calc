@@ -204,7 +204,7 @@ th:first-child { position: sticky; left: 0; }
         <button type="button" id="mDuo" aria-pressed="true">Duo</button>
       </div></div>
     <div class="panel tbl"><table>
-      <thead><tr><th>ゾーン</th><th class="wide">半径</th><th>ダメージ</th><th class="wide">待機（開始）</th><th class="wide">収縮（開始）</th><th>サージ人数</th><th>サージ開始</th><th>最終警告</th></tr></thead>
+      <thead><tr><th>ゾーン</th><th class="wide">半径</th><th>待機時間</th><th>ダメージ</th><th class="wide">待機（開始）</th><th class="wide">収縮（開始）</th><th>サージ人数</th><th>サージ開始</th><th>最終警告</th></tr></thead>
       <tbody id="zrows"></tbody>
     </table></div>
     <div class="aside"><span class="label">補足：</span>
@@ -396,10 +396,10 @@ th:first-child { position: sticky; left: 0; }
   function buildZoneTable() {
     var h = "";
     ZONES.forEach(function (z, i) {
-      h += '<tr id="zr' + i + '"' + (i === 0 ? " hidden" : "") + '><td>Z' + z[0] + '<span class="in" id="en' + i + '"></span>' + zimg(i) + '</td><td class="wide">' + z[1] + '</td><td>' + z[2] + '</td><td class="wide">' + (z[3] > 0 ? fmt(z[3]) : "―") + '</td><td class="wide">' + (z[4] > 0 ? fmt(z[4]) : "―") +
+      h += '<tr id="zr' + i + '"' + (i === 0 ? " hidden" : "") + '><td>Z' + z[0] + '<span class="in" id="en' + i + '"></span>' + zimg(i) + '</td><td class="wide">' + z[1] + '</td><td>' + (z[3] > 0 ? fmt(z[3]) : "―") + '</td><td>' + z[2] + '</td><td class="wide">' + (z[3] > 0 ? fmt(z[3]) : "―") + '</td><td class="wide">' + (z[4] > 0 ? fmt(z[4]) : "―") +
         '</td><td><input class="sg" id="sg' + i + '" type="text" value="' + esc(surgeData[surgeMode][i]) + '" placeholder="未確認" aria-label="Zone ' + z[0] + ' のサージ人数"></td><td class="evc ci" id="ei' + i + '">―</td><td class="evc ck" id="ek' + i + '">―</td></tr>';
     });
-    h += '<tr id="zrt" hidden><td>最終円後</td><td class="wide">―</td><td>10</td><td class="wide">―</td><td class="wide">―</td><td>―</td><td class="evc ci" id="eit">―</td><td class="evc ck" id="ekt">―</td></tr>';
+    h += '<tr id="zrt" hidden><td>最終円後</td><td class="wide">―</td><td>―</td><td>10</td><td class="wide">―</td><td class="wide">―</td><td>―</td><td class="evc ci" id="eit">―</td><td class="evc ck" id="ekt">―</td></tr>';
     $("zrows").innerHTML = h;
     ZONES.forEach(function (zz, i) {
       $("sg" + i).addEventListener("input", function () { surgeData[surgeMode][i] = this.value; saveSurge(); render(); });
