@@ -19,18 +19,21 @@ img{max-width:100%}
   --navy: #33506B; --on-navy: #FFFFFF; --navy-text: #33506B; --navy-soft: #ECF0F4; --note: #1F4D78;
   --coral: #E16259; --blue: #337EA9; --mustard: #D6AD32; --mustard-soft: #F4EED9;
   --ok: #448361; --caution: #CB912F; --ng: #D44C47; --band: #EEEEE8;
+  --purple: #9065B0; --purple-soft: #F1EAF7; --ng-soft: #FBE6E4;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #1C1D1B; --panel: #262725; --text: #ECEBE4; --muted: #A09F98; --line: #3A3B37;
     --navy-text: #9DBBD6; --navy-soft: #2A3441; --note: #A9C6E2; --blue: #5AA3CC;
     --mustard-soft: #3A3626; --band: #2D2E2B; color-scheme: dark;
+    --purple: #B48AD6; --purple-soft: #352B40; --ng-soft: #432826;
   }
 }
 :root[data-theme="dark"] {
   --bg: #1C1D1B; --panel: #262725; --text: #ECEBE4; --muted: #A09F98; --line: #3A3B37;
   --navy-text: #9DBBD6; --navy-soft: #2A3441; --note: #A9C6E2; --blue: #5AA3CC;
   --mustard-soft: #3A3626; --band: #2D2E2B; color-scheme: dark;
+    --purple: #B48AD6; --purple-soft: #352B40; --ng-soft: #432826;
 }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--text); font-family: "Roboto", "Zen Kaku Gothic New", sans-serif; font-size: 14px; line-height: 1.6; padding-inline: 16px; padding-block: 24px 48px; }
@@ -64,9 +67,9 @@ details[open] summary { margin-bottom: 10px; }
 .entry b { color: var(--text); font-weight: 500; }
 .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .card { background: var(--panel); border: 1px solid var(--line); border-top-width: 4px; padding: 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.card.warn { border-top-color: var(--caution); } .card.infl { border-top-color: var(--coral); } .card.kill { border-top-color: var(--ng); }
+.card.warn { border-top-color: var(--caution); } .card.infl { border-top-color: var(--purple); background: var(--purple-soft); } .card.kill { border-top-color: var(--ng); background: var(--ng-soft); }
 .card .tag { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 4px; }
-.card.warn .tag { color: var(--caution); } .card.infl .tag { color: var(--coral); } .card.kill .tag { color: var(--ng); }
+.card.warn .tag { color: var(--caution); } .card.infl .tag { color: var(--purple); } .card.kill .tag { color: var(--ng); }
 .card .zp { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 18px; margin-top: 2px; }
 .card .big { font-size: 38px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .card .sub { font-size: 12px; color: var(--muted); }
@@ -201,6 +204,8 @@ body:not(.live) #liveSec { display: none; }
   .zc dl { font-size: 12px; gap: 1px 4px; }
   .zc .zx { font-size: 12px; }
 }
+/* 到達済みの予測カードは白黒にして暗くする */
+.card.reached { background: var(--band); filter: grayscale(1); opacity: 0.45; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 
@@ -428,8 +433,8 @@ body:not(.live) #liveSec { display: none; }
 
   var CARDS = [
     { key: "w", cls: "warn", icon: "warning", name: "警告" },
-    { key: "i", cls: "infl", icon: "sick", name: "サージ開始" },
-    { key: "k", cls: "kill", icon: "dangerous", name: "最終警告" }
+    { key: "i", cls: "infl", icon: "sick", name: "ストーム酔" },
+    { key: "k", cls: "kill", icon: "skull", name: "即死" }
   ];
   var NAME = { w: "警告", i: "サージ開始", k: "最終警告" };
 
@@ -737,7 +742,7 @@ body:not(.live) #liveSec { display: none; }
     $("lStat").className = "s" + (s.inside ? " in" : "");
     $("lAcc").textContent = "蓄積 " + Math.floor(s.a) + " / " + p.k;
     var pc = function (v) { return Math.max(0, Math.min(100, v / p.k * 100)); };
-    setH("lBar", '<i style="width:' + pc(s.a).toFixed(1) + '%"></i><b style="left:' + pc(p.w) + '%;background:var(--caution)"></b><b style="left:' + pc(p.i) + '%;background:var(--coral)"></b>');
+    setH("lBar", '<i style="width:' + pc(s.a).toFixed(1) + '%"></i><b style="left:' + pc(p.w) + '%;background:var(--caution)"></b><b style="left:' + pc(p.i) + '%;background:var(--purple)"></b>');
     var sb = $("lStorm");
     sb.textContent = n === 0 ? "ストーム突入" : s.inside ? "一時脱出" : "再突入";
     sb.className = "btn storm" + (s.inside ? " out" : "");
@@ -747,8 +752,8 @@ body:not(.live) #liveSec { display: none; }
     $("lCap").textContent = !started ? "" : s.inside ? "このままストーム内にいた場合の予測" : "今ストームに入った場合の予測";
     var fut = simulate(s.M, s.a, p), h = "";
     CARDS.forEach(function (c) {
-      var past = s.ev[c.key], e = fut.ev[c.key];
-      h += '<div class="card ' + c.cls + '"><div class="tag"><span class="mi">' + c.icon + '</span>' + c.name + '</div>';
+      var past = s.ev[c.key], e = fut.ev[c.key], done = started && (past || (e && e.pre));
+      h += '<div class="card ' + c.cls + (done ? " reached" : "") + '"><div class="tag"><span class="mi">' + c.icon + '</span>' + c.name + '</div>';
       if (!started) {
         h += '<div class="big">―</div>';
       } else if (past || (e && e.pre)) {
