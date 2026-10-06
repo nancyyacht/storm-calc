@@ -336,7 +336,7 @@ body:not(.live) #liveSec { display: none; }
 <script>
 (function () {
   var ZONES = [
-    [0, "1.8km", 1, 60, 0], [1, "950m", 1, 110, 85], [2, "750m", 1, 60, 90], [3, "525m", 1, 50, 100],
+    [0, "1.8km", 1, 92, 0], [1, "950m", 1, 110, 85], [2, "750m", 1, 60, 90], [3, "525m", 1, 50, 100],
     [4, "325m", 1, 70, 85], [5, "200m", 2, 40, 70], [6, "100m", 5, 40, 70], [7, "50m", 8, 35, 60],
     [8, "25m", 10, 20, 60], [9, "17m", 10, 0, 55], [10, "11m", 10, 0, 50], [11, "10m", 10, 0, 50], [12, "0cm", 10, 0, 90]
   ];
@@ -616,8 +616,8 @@ body:not(.live) #liveSec { display: none; }
     $("chart").innerHTML = s;
   }
 
-  // ライブ：スタートを0秒とし、32秒でゾーン1開始（内部の経過秒は info[1].s から逆算してずらす）
-  var LIVE_Z1 = 32, LIVE_DROP = 7, LIVE_OFF = info[1].s - LIVE_Z1;
+  // ライブ：スタートを0秒とし、1分32秒でゾーン1開始（内部の経過秒は info[1].s から逆算してずらす）
+  var LIVE_Z1 = 92, LIVE_DROP = 7, LIVE_OFF = info[1].s - LIVE_Z1;
   var live = { start: 0, log: [] };
   try {
     var lv = JSON.parse(localStorage.getItem("ssc-live-v1") || "null");
@@ -683,7 +683,7 @@ body:not(.live) #liveSec { display: none; }
     var p = s.p, sg = segAt(s.M), cur = sg.z, n = live.log.length;
     $("lClock").textContent = fmt(Math.floor(s.E));
     $("lPhase").textContent = sg.ph === "最終円後" ? "最終円後 " + cd(sg, s.M) : zp(sg) + " 残り " + cdUp(sg, s.M);
-    $("lNote").textContent = !started ? "ゲーム開始と同時に「ゲームスタート」を押してください。7秒後に降下開始、32秒後にゾーン1が始まります。"
+    $("lNote").textContent = !started ? "ゲーム開始と同時に「ゲームスタート」を押してください。7秒後に降下開始、1分32秒後にゾーン1が始まります。"
       : (s.E < LIVE_DROP ? "降下開始まで " + up(LIVE_DROP - s.E) : "");
     $("lNote").hidden = !$("lNote").textContent;
     $("lAdjL").hidden = !started;
