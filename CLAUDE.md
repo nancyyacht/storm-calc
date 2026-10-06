@@ -10,7 +10,7 @@
 | 場所 | URL | 備考 |
 |---|---|---|
 | GitHub（本リポジトリ） | https://github.com/nancyyacht/storm-calc | `index.html` が正本。Pages 公開URL：`https://nancyyacht.github.io/storm-calc/`（2026-10-06 に表示を確認済み）。旧ユーザー名 `amuzaq` から変更済みで、旧URLは使えない |
-| claude.ai Artifact | https://claude.ai/artifact/Fe4fk5Bb8qqtpq6KV3wPU8（Version 21） | 公開時に `<!doctype>`・viewport が自動で付く。GitHub版はこれらを手書きで足してある |
+| claude.ai Artifact | https://claude.ai/artifact/Fe4fk5Bb8qqtpq6KV3wPU8（Version 22） | 公開時に `<!doctype>`・viewport が自動で付く。GitHub版はこれらを手書きで足してある |
 
 - 内容を直したら**両方**を更新する。Artifact は同じURLを指定して再公開すれば、リンクは変わらない（Artifact の `url` 指定が必要）。
 - Artifact側の元ファイルは、前のセッションの作業フォルダにあり、引き継がれない。GitHub の `index.html` から、先頭の `<!doctype>〜<head>` の手書き部分（`<meta name="viewport">` と末尾の `[hidden]` などの小さな `<style>`）を除いて公開する。
@@ -96,6 +96,7 @@
   - 黒い円の直径を約30pxに統一。画像はコード内の `ZIMG` に base64 で埋め込み。差し替えるときは、ここを書き換える。
 
 ## デザイン
+- アプリ名（タブ名・ホーム画面に追加したときの名前）は「Storm-calc」（`<title>`、GitHub版は `application-name` と `apple-mobile-web-app-title` の meta も）。画面内の見出しは「ストームシックネス計算機」のまま。
 - 「やさしいグレー」仕様（紺 #33506B、背景 #F5F5F0、ポイント #D6AD32 ほか）。
 - 色はすべて CSS 変数で定義し、ダークモードにも対応。アイコンは Material Symbols Outlined。
 - フォント：Zen Kaku Gothic New と Roboto（Google Fonts）。読み込めない環境では代替書体。
