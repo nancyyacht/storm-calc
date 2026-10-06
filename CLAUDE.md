@@ -9,18 +9,15 @@
 ## 公開場所（同じ内容が2か所）
 | 場所 | URL | 備考 |
 |---|---|---|
-| GitHub（本リポジトリ） | https://github.com/amuzaq/storm-calc | `index.html` が正本。Pages の公開URLは `https://amuzaq.github.io/storm-calc/` の見込み（有効化済みかは未確認） |
+| GitHub（本リポジトリ） | https://github.com/nancyyacht/storm-calc | `index.html` が正本。Pages 公開URL：`https://nancyyacht.github.io/storm-calc/`（2026-10-06 に表示を確認済み）。旧ユーザー名 `amuzaq` から変更済みで、旧URLは使えない |
 | claude.ai Artifact | https://claude.ai/artifact/Fe4fk5Bb8qqtpq6KV3wPU8（Version 13） | 公開時に `<!doctype>`・viewport が自動で付く。GitHub版はこれらを手書きで足してある |
 
 - 内容を直したら**両方**を更新する。Artifact は同じURLを指定して再公開すれば、リンクは変わらない（Artifact の `url` 指定が必要）。
 - Artifact側の元ファイルは、前のセッションの作業フォルダにあり、引き継がれない。GitHub の `index.html` から、先頭の `<!doctype>〜<head>` の手書き部分（`<meta name="viewport">` と末尾の `[hidden]` などの小さな `<style>`）を除いて公開する。
 
-## 権限の状態（未解決）
-- このリポジトリは、セッションに追加済みだが **push は拒否された**（`Claude doesn't have GitHub access to amuzaq/storm-calc`）。
-- 書き換えるには、次のどちらかが必要：
-  1. https://github.com/apps/claude/installations/select_target で Claude GitHub App を `amuzaq` に入れ、`storm-calc` を許可する。
-  2. claude.ai の設定 → コネクタ から GitHub を再接続する。
-- それまでは、変更した `index.html` をユーザーが GitHub の画面（Add file → Upload files）で上げ直す。
+## 権限の状態
+- Claude の GitHub アプリを許可済みで、push できる（2026-10-06 に `main` へ push して確認）。
+- GitHub のユーザー名は `amuzaq` から `nancyyacht` に変わった。リモートのURLが古い名前のままでも、転送されて動く。次の作業で、`git remote set-url origin https://github.com/nancyyacht/storm-calc` にそろえてよい。
 
 ## 計算モデル（ここが最重要）
 入力はゲーム内のカウントダウン。内部では試合開始からの経過秒に直して計算する。
@@ -94,4 +91,4 @@
 1. ユーザーの実測値をもらい、係数と最終警告の定義を合わせる（上の「未解決の食い違い」）。
 2. GitHub Pages の公開と、スマホでの表示確認。
 3. サージ人数を、現行 C7S4 の値で確認する。
-4. push の権限を付与し、Code から直接更新できるようにする。
+4. 公開ページをスマホで開き、表示を確認してもらう。
