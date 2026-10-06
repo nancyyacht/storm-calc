@@ -135,6 +135,64 @@ th:first-child { position: sticky; left: 0; }
   .card .rel { font-size: 11px; margin-top: 2px; }
   .card .sub { font-size: 11px; }
 }
+.modes { display: flex; }
+.modes .seg { width: 100%; max-width: 320px; }
+body.live #resSec, body.live #brkSec, body.live #zoneSec, body.live #noteSec, body.live #chartSec { display: none; }
+body:not(.live) #liveSec, body:not(.live) #lvBar { display: none; }
+body.live { padding-block-end: 124px; }
+body.live .done { display: block; }
+.pill { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 14px; padding: 8px 12px; display: flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--panel); }
+.pill.idle { color: var(--muted); }
+.pill.in { color: var(--coral); border-color: var(--coral); }
+.pill.out { color: var(--ok); border-color: var(--ok); }
+.pill small { font-weight: 500; font-size: 12px; color: var(--muted); margin-left: auto; text-align: right; }
+.lv-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: start; }
+.lv-left { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.zc { background: var(--panel); border: 1px solid var(--line); border-top: 4px solid var(--navy); padding: 10px; min-width: 0; }
+.zc.next { border-top-color: var(--blue); }
+.zc .zl { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+.zc .zn { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 17px; }
+.zc .zt { font-size: 42px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.zc.next .zt { font-size: 26px; }
+.zc .zt small { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+.zc .zinfo { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
+.lv-right { padding: 10px; }
+.lv-h { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+.lv-ctx { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.evr { border-top: 1px solid var(--line); padding: 6px 4px; }
+.evr .evh { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 3px; }
+.evr .evh .mi { font-size: 16px; }
+.evr.w .evh { color: var(--caution); } .evr.i .evh { color: var(--coral); } .evr.k .evh { color: var(--ng); }
+.evr .evt { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.evr .evt.reached { font-size: 20px; }
+.evr .evs { font-size: 11px; color: var(--muted); }
+.evr.soon { background: var(--mustard-soft); }
+.gauge { border-top: 1px solid var(--line); padding: 8px 4px 4px; }
+.gbar { position: relative; height: 10px; background: var(--bg); border: 1px solid var(--line); }
+.gbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--navy-text); }
+.gbar b { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--muted); }
+.gtxt { font-size: 12px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.gtxt span { color: var(--muted); }
+.players { border-top: 1px solid var(--line); padding: 8px 4px 2px; font-size: 13px; }
+.players .pk { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+.players .pr { display: flex; justify-content: space-between; gap: 6px; font-variant-numeric: tabular-nums; }
+.players .pr b { font-weight: 700; }
+.lv-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--panel); border-top: 1px solid var(--line); padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); }
+.lv-in { max-width: 980px; margin: 0 auto; display: flex; gap: 8px; }
+.lv-bar button { font: inherit; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.lv-bar button[hidden] { display: none; }
+.b-main { flex: 1; min-width: 0; min-height: 58px; gap: 8px; padding: 6px 10px; }
+.b-main .mi { font-size: 30px; }
+.b-main .bt { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25; }
+.b-main .bt b { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 20px; }
+.b-main .bt i { font-style: normal; font-size: 12px; font-weight: 500; }
+.m-idle { background: var(--navy); color: var(--on-navy); }
+.m-in { background: var(--mustard); color: #252420; }
+.m-out { background: var(--ok); color: #FFFFFF; }
+.b-sub { flex-direction: column; gap: 2px; width: 68px; min-height: 58px; background: var(--bg); color: var(--text); border: 1px solid var(--line); font-size: 11px; padding: 4px; }
+.b-sub .mi { font-size: 22px; }
+.lv-bar button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+@media (max-width: 400px) { .zc .zt { font-size: 38px; } .evr .evt { font-size: 27px; } .zc .zn { font-size: 15px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 
@@ -147,14 +205,19 @@ th:first-child { position: sticky; left: 0; }
     <div style="color:var(--muted)">ゲーム内のカウントダウン表示で、警告・サージ開始・最終警告が来るタイミングを計算します。</div>
   </header>
 
+  <div class="modes"><div class="seg" role="group" aria-label="表示モード">
+    <button type="button" id="tCalc" aria-pressed="true">計算</button>
+    <button type="button" id="tLive" aria-pressed="false">ライブ</button>
+  </div></div>
+
   <section id="resSec">
     <h2><span class="mi">schedule</span>結果</h2>
     <div class="cards" id="cards"></div>
   </section>
 
-  <section>
+  <section id="inSec">
     <details id="inDet" open>
-    <summary class="ribbon"><span class="mi">tune</span><span>入力</span><span class="rsum" id="inSum"></span><span class="mi chev">expand_more</span></summary>
+    <summary class="ribbon"><span class="mi">tune</span><span id="inLbl">入力</span><span class="rsum" id="inSum"></span><span class="mi chev">expand_more</span></summary>
     <div class="cols">
       <div class="panel stack">
         <div class="row">
@@ -186,6 +249,23 @@ th:first-child { position: sticky; left: 0; }
 
     </div>
     </details>
+  </section>
+
+  <section id="liveSec">
+    <div class="pill idle" id="lvState"></div>
+    <div class="lv-grid">
+      <div class="lv-left">
+        <div class="zc now" id="zcNow"></div>
+        <div class="zc next" id="zcNext"></div>
+      </div>
+      <div class="panel lv-right">
+        <h3 class="lv-h"><span class="mi">sick</span>サージ情報</h3>
+        <div class="lv-ctx" id="lvCtx"></div>
+        <div id="lvEv"></div>
+        <div id="lvGauge"></div>
+        <div id="lvPlayers"></div>
+      </div>
+    </div>
   </section>
 
   <section id="brkSec">
@@ -237,6 +317,12 @@ th:first-child { position: sticky; left: 0; }
     <div class="panel"><div class="chart" id="chart"></div></div>
   </section>
 </div>
+
+<div class="lv-bar" id="lvBar"><div class="lv-in">
+  <button type="button" id="bMain" class="b-main m-idle"><span class="mi">play_arrow</span><span class="bt"><b id="bMainA">スタート</b><i id="bMainB">ストームに入った時</i></span></button>
+  <button type="button" id="bSync" class="b-sub" hidden><span class="mi">sync</span><span>時間補正</span></button>
+  <button type="button" id="bReset" class="b-sub" hidden><span class="mi">restart_alt</span><span id="bResetT">リセット</span></button>
+</div></div>
 
 <script>
 (function () {
@@ -338,6 +424,7 @@ th:first-child { position: sticky; left: 0; }
 
   var ITEM = 40, remSel = 40, wheelKey = "", wheelVals = [], wheelLock = false, wheelTimer = null, closeTimer = null;
   function scheduleClose() {
+    if (document.body.classList.contains("live") && L && L.mode !== "idle") return;
     if (!window.matchMedia || !window.matchMedia("(max-width: 760px)").matches) return;
     clearTimeout(closeTimer);
     closeTimer = setTimeout(function () { $("inDet").open = false; }, 900);
@@ -468,6 +555,7 @@ th:first-child { position: sticky; left: 0; }
     $("rows").innerHTML = rh;
 
     drawChart(T0, A0, p, r);
+    liveRender();
   }
 
   function drawChart(T0, A0, p, r) {
@@ -518,6 +606,173 @@ th:first-child { position: sticky; left: 0; }
     $("chart").innerHTML = s;
   }
 
+
+  /* ───────── ライブモード ─────────
+     ゾーンの時計は、ストームの内外に関係なく進み続ける。
+     蓄積ダメージは「ストーム内」の間だけ増える。 */
+  var LKEY = "ssc-live-v1", TKEY = "ssc-tab";
+  var L = { mode: "idle", t0: 0, wall0: 0, tBase: 0, aBase: 0 };
+  try {
+    var ls = JSON.parse(localStorage.getItem(LKEY) || "null");
+    if (ls && (ls.mode === "in" || ls.mode === "out") && isFinite(ls.t0) && isFinite(ls.wall0) && isFinite(ls.tBase) && isFinite(ls.aBase) &&
+        Date.now() >= ls.wall0 && Date.now() - ls.wall0 < 3 * 3600 * 1000) {
+      L = { mode: ls.mode, t0: +ls.t0, wall0: +ls.wall0, tBase: +ls.tBase, aBase: +ls.aBase };
+    }
+  } catch (e) {}
+  function saveLive() { try { localStorage.setItem(LKEY, JSON.stringify(L)); } catch (e) {} }
+  function isLive() { return document.body.classList.contains("live"); }
+  function readP() { return { w: num("tW", 500), i: num("tI", 600), k: num("tK", 800), mul: Math.max(1, num("mul", 3)), coef: Math.max(0, num("k", 1)) }; }
+  function readInput() {
+    var z = parseInt($("zone").value, 10) || 0, zi = info[z];
+    var ph = $("ph").value;
+    var len = ph === "w" ? ZONES[z][3] : ZONES[z][4];
+    var rem = Math.min(remSel, len);
+    return { T0: (ph === "w" ? zi.w : zi.e) - rem, A0: Math.max(0, num("pre", 0)) };
+  }
+  function advance(t0, t1, A, p) {
+    var t = t0, guard = 0;
+    while (t < t1 && guard++ < 200) {
+      var sg = segAt(t), segEnd = Math.min(sg.e, t1);
+      var rate = sg.dmg * p.coef * (A >= p.i ? p.mul : 1);
+      if (rate <= 0) { t = segEnd; continue; }
+      if (A < p.i && A + rate * (segEnd - t) > p.i) { t += (p.i - A) / rate; A = p.i; continue; }
+      A += rate * (segEnd - t); t = segEnd;
+    }
+    return A;
+  }
+  function liveNow() {
+    var p = readP();
+    if (L.mode === "idle") { var inp = readInput(); return { T: inp.T0, A: inp.A0, p: p }; }
+    var T = L.t0 + (Date.now() - L.wall0) / 1000;
+    return { T: T, A: L.mode === "in" ? advance(L.tBase, T, L.aBase, p) : L.aBase, p: p };
+  }
+  function fmtUp(sec) { return fmt(Math.ceil(Math.max(0, sec) - 1e-9)); }
+
+  var wakeLock = null;
+  function lock() {
+    try {
+      if (navigator.wakeLock && document.visibilityState === "visible" && !wakeLock) {
+        navigator.wakeLock.request("screen").then(function (w) { wakeLock = w; w.addEventListener("release", function () { wakeLock = null; }); }).catch(function () {});
+      }
+    } catch (e) {}
+  }
+  function unlock() { try { if (wakeLock) wakeLock.release(); } catch (e) {} wakeLock = null; }
+  document.addEventListener("visibilitychange", function () { if (L.mode !== "idle") lock(); });
+
+  function doStart() {
+    var inp = readInput();
+    L = { mode: "in", t0: inp.T0, wall0: Date.now(), tBase: inp.T0, aBase: inp.A0 };
+    saveLive(); $("inDet").open = false; lock(); liveRender(true);
+  }
+  function doPause() { var s = liveNow(); L.aBase = s.A; L.tBase = s.T; L.mode = "out"; saveLive(); liveRender(true); }
+  function doResume() { var s = liveNow(); L.tBase = s.T; L.mode = "in"; saveLive(); lock(); liveRender(true); }
+  function applySync() {
+    var s = liveNow(), inp = readInput();
+    L.aBase = s.A; L.t0 = inp.T0; L.wall0 = Date.now(); L.tBase = inp.T0;
+    saveLive(); liveRender(true);
+  }
+  function prefillFromClock() {
+    var s = liveNow(), sg = segAt(s.T);
+    $("zone").value = String(sg.z);
+    $("ph").value = sg.ph === "待機" ? "w" : "s";
+    remSel = sg.e === Infinity ? 0 : Math.max(0, Math.round(sg.e - s.T));
+    wheelKey = "";
+    render();
+    $("inDet").open = true;
+  }
+  var resetArmed = false, resetTimer = null;
+  function doReset() {
+    if (!resetArmed) {
+      resetArmed = true; liveRender(true);
+      resetTimer = setTimeout(function () { resetArmed = false; liveRender(true); }, 3000);
+      return;
+    }
+    clearTimeout(resetTimer); resetArmed = false;
+    L = { mode: "idle", t0: 0, wall0: 0, tBase: 0, aBase: 0 };
+    saveLive(); unlock(); liveRender(true);
+  }
+
+  var lastLive = "";
+  function liveRender(force) {
+    if (!isLive()) return;
+    var s = liveNow(), T = s.T, A = s.A, p = s.p, mode = L.mode;
+    var sg = segAt(T), idx = segs.indexOf(sg), nx = segs[idx + 1] || null;
+    var r = simulate(T, A, p);
+
+    var stTxt = { idle: ["hourglass_empty", "未スタート", "入力した時間で表示中"],
+                  in: ["play_circle", "ストーム内", "ダメージ蓄積中"],
+                  out: ["pause_circle", "ストーム外", "蓄積停止（ゾーンの時計は進行中）"] }[mode];
+    var state = '<span class="mi">' + stTxt[0] + '</span>' + stTxt[1] + '<small>' + stTxt[2] + '</small>';
+
+    var base = sg.dmg * p.coef, sick = A >= p.i;
+    var dmgTxt = "毎秒 " + num1(base) + (sick ? " → " + num1(base * p.mul) + "（サージ中）" : "");
+    var big = sg.e === Infinity ? "+" + fmt(T - sg.s) : fmtUp(sg.e - T);
+    var zNow = '<div class="zl">今</div><div class="zn">' + zp(sg) + '</div><div class="zt">' + big + '</div>' +
+               '<div class="zinfo">半径 ' + ZONES[sg.z][1] + '<br>ダメージ ' + dmgTxt + '</div>';
+    var zNext;
+    if (nx) {
+      zNext = '<div class="zl">次</div><div class="zn">' + zp(nx) + '</div><div class="zt">' + fmt(nx.e === Infinity ? 0 : nx.e - nx.s) + '<small>から</small></div>' +
+              '<div class="zinfo">半径 ' + ZONES[nx.z][1] + '<br>ダメージ 毎秒 ' + num1(nx.dmg * p.coef) + '</div>';
+    } else {
+      zNext = '<div class="zl">次</div><div class="zn">なし</div><div class="zt">―</div><div class="zinfo">最終円のあと</div>';
+    }
+
+    var ctx = mode === "in" ? "このまま入っていた場合の残り時間" : mode === "out" ? "いま入った場合の残り時間" : "入力した時間から入った場合の残り時間";
+    var evh = "";
+    CARDS.forEach(function (c) {
+      var e = r.ev[c.key], k = c.key, tm, sub = "", soon = false;
+      if (!e) { tm = '<div class="evt">―</div>'; sub = "到達しません"; }
+      else if (e.pre) { tm = '<div class="evt reached">到達</div>'; sub = "蓄積 " + num1(Math.max(A, e.a)); }
+      else {
+        var rem = e.t - T; soon = mode === "in" && rem <= 10;
+        tm = '<div class="evt">' + fmtUp(rem) + '</div>'; sub = zp(e.seg) + " " + cd(e.seg, e.t);
+      }
+      evh += '<div class="evr ' + k + (soon ? " soon" : "") + '"><div class="evh"><span class="mi">' + c.icon + '</span>' + c.name + '</div>' + tm + '<div class="evs">' + sub + '</div></div>';
+    });
+
+    var pct = Math.max(0, Math.min(100, A / p.k * 100));
+    var gauge = '<div class="gauge"><div class="gbar"><i style="width:' + pct.toFixed(1) + '%"></i><b style="left:' + (p.w / p.k * 100).toFixed(1) + '%"></b><b style="left:' + (p.i / p.k * 100).toFixed(1) + '%"></b></div>' +
+                '<div class="gtxt">蓄積 <b>' + Math.floor(A) + '</b> / ' + p.k + ' <span>（警告 ' + p.w + '・サージ ' + p.i + '）</span></div></div>';
+    var players = '<div class="players"><div class="pk">サージ人数（' + (surgeMode === "solo" ? "Solo" : "Duo") + '・残り人数）</div>' +
+                  '<div class="pr"><span>今 Z' + sg.z + '</span><b>' + surgeOf(sg.z) + '</b></div>' +
+                  (nx ? '<div class="pr"><span>次 Z' + nx.z + '</span><b>' + surgeOf(nx.z) + '</b></div>' : '') + '</div>';
+
+    var m = { idle: ["m-idle", "play_arrow", "スタート", "ストームに入った時"],
+              in: ["m-in", "pause", "一時停止", "ストームから出た時"],
+              out: ["m-out", "play_arrow", "再開", "ストームに入った時"] }[mode];
+    var key = [state, zNow, zNext, ctx, evh, gauge, players, mode, resetArmed, Math.floor(A / 1)].join("|");
+    if (!force && key === lastLive) return;
+    lastLive = key;
+
+    var ps = $("lvState"); ps.className = "pill " + mode; ps.innerHTML = state;
+    $("zcNow").innerHTML = zNow; $("zcNext").innerHTML = zNext;
+    $("lvCtx").textContent = ctx; $("lvEv").innerHTML = evh; $("lvGauge").innerHTML = gauge; $("lvPlayers").innerHTML = players;
+    $("bMain").className = "b-main " + m[0];
+    $("bMain").querySelector(".mi").textContent = m[1];
+    $("bMainA").textContent = m[2]; $("bMainB").textContent = m[3];
+    $("bSync").hidden = mode === "idle"; $("bReset").hidden = mode === "idle";
+    $("bResetT").textContent = resetArmed ? "もう一度で終了" : "リセット";
+    $("inDone").textContent = mode === "idle" ? "決定" : "この時間に合わせる";
+  }
+
+  function setTab(t) {
+    var live = t === "live";
+    document.body.classList.toggle("live", live);
+    $("tCalc").setAttribute("aria-pressed", live ? "false" : "true");
+    $("tLive").setAttribute("aria-pressed", live ? "true" : "false");
+    $("inLbl").textContent = live ? "ゲーム時間" : "入力";
+    $("wheelLbl").textContent = live ? "いまのカウントダウン残り（10秒ごと）" : "入った時のカウントダウン残り（10秒ごと）";
+    $("inDone").textContent = "決定";
+    try { localStorage.setItem(TKEY, t); } catch (e) {}
+    if (live) { lastLive = ""; liveRender(true); if (L.mode !== "idle") lock(); } else { render(); }
+  }
+  $("tCalc").addEventListener("click", function () { setTab("calc"); });
+  $("tLive").addEventListener("click", function () { setTab("live"); });
+  $("bMain").addEventListener("click", function () { if (L.mode === "idle") doStart(); else if (L.mode === "in") doPause(); else doResume(); });
+  $("bSync").addEventListener("click", prefillFromClock);
+  $("bReset").addEventListener("click", doReset);
+  setInterval(function () { if (isLive() && L.mode !== "idle") liveRender(); }, 250);
+
   buildZoneTable();
   ["zone", "ph", "pre", "tW", "tI", "tK", "mul", "k"].forEach(function (id) {
     $(id).addEventListener("input", render);
@@ -533,13 +788,15 @@ th:first-child { position: sticky; left: 0; }
     wheelLock = true; $("wheel").scrollTop = i * ITEM; markWheel(i);
     setTimeout(function () { wheelLock = false; }, 150);
   });
-  $("inDone").addEventListener("click", function () { clearTimeout(closeTimer); det.open = false; });
+  $("inDone").addEventListener("click", function () { if (isLive() && L.mode !== "idle") applySync(); clearTimeout(closeTimer); det.open = false; });
   $("mSolo").addEventListener("click", function () { setSurgeMode("solo"); });
   $("mDuo").addEventListener("click", function () { setSurgeMode("duo"); });
   $("mSolo").setAttribute("aria-pressed", surgeMode === "solo" ? "true" : "false");
   $("mDuo").setAttribute("aria-pressed", surgeMode === "duo" ? "true" : "false");
   window.addEventListener("resize", function () { if (drawChart.last) drawChart.apply(null, drawChart.last); });
   render();
+  var startTab = "calc"; try { startTab = localStorage.getItem(TKEY) === "live" ? "live" : "calc"; } catch (e) {}
+  if (startTab === "live") setTab("live");
 })();
 </script>
 </body>
