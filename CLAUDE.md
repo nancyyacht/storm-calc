@@ -17,7 +17,7 @@
 
 ## 権限の状態
 - Claude の GitHub アプリを許可済みで、push できる（2026-10-06 に `main` へ push して確認）。
-- GitHub のユーザー名は `amuzaq` から `nancyyacht` に変わった。リモートのURLが古い名前のままでも、転送されて動く。次の作業で、`git remote set-url origin https://github.com/nancyyacht/storm-calc` にそろえてよい。
+- GitHub のユーザー名は `amuzaq` から `nancyyacht` に変わった。リモートのURLが古い名前のままでも、転送されて動く。Claude のセッションでは、リモートは旧名のURL（`https://github.com/amuzaq/storm-calc`）のまま使うこと。新名のURLに変えると、接続が許可されず push が 403 で失敗した（2026-10-06）。
 
 ## 計算モデル（ここが最重要）
 入力はゲーム内のカウントダウン。内部では試合開始からの経過秒に直して計算する。
