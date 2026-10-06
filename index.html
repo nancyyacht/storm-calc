@@ -135,6 +135,49 @@ th:first-child { position: sticky; left: 0; }
   .card .rel { font-size: 11px; margin-top: 2px; }
   .card .sub { font-size: 11px; }
 }
+.wrap > header { order: -3; } .modes { order: -2; } #liveSec { order: -1; }
+body.live #resSec, body.live #inSec, body.live #brkSec, body.live #zoneSec, body.live #noteSec, body.live #chartSec { display: none; }
+body:not(.live) #liveSec { display: none; }
+.modes .seg { max-width: 260px; }
+.lclock { display: flex; align-items: baseline; gap: 4px 12px; flex-wrap: wrap; }
+.lclock .big { font-size: 40px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.lclock .ph { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 18px; color: var(--navy-text); font-variant-numeric: tabular-nums; }
+.lcap { font-size: 12px; color: var(--muted); }
+.lbtns { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.btn { font: inherit; font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 15px; padding: 8px 12px; border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; }
+.btn.pri { background: var(--navy); color: var(--on-navy); border-color: var(--navy); }
+.btn.sm { font-size: 13px; padding: 4px 8px; }
+.btn.storm { background: var(--coral); color: #FFFFFF; border-color: var(--coral); font-size: 20px; padding: 14px; width: 100%; }
+.btn.storm.out { background: var(--ok); border-color: var(--ok); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.zcs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.zc { background: var(--panel); border: 1px solid var(--line); border-top: 4px solid var(--navy); padding: 10px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.zc.nx { border-top-color: var(--muted); }
+.zc .zt { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 12px; color: var(--muted); }
+.zc .zh { display: flex; align-items: center; gap: 8px; min-height: 34px; }
+.zc .zn { font-size: 30px; font-weight: 700; line-height: 1.1; color: var(--navy-text); }
+.zc .zi { margin-left: 0; }
+.zc .zx { font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.zc dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 8px; margin: 2px 0 0; font-size: 13px; }
+.zc dt { color: var(--muted); }
+.zc dd { margin: 0; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.lst { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.lst .s { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 17px; }
+.lst .s.in { color: var(--coral); }
+.lst .acc { font-variant-numeric: tabular-nums; font-weight: 500; }
+.abar { position: relative; height: 12px; background: var(--band); border: 1px solid var(--line); }
+.abar > i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--navy-text); }
+.abar > b { position: absolute; top: -4px; bottom: -4px; width: 2px; }
+@media (max-width: 560px) {
+  .lclock .big { font-size: 34px; }
+  .lclock .ph { font-size: 16px; }
+  .zcs { gap: 6px; }
+  .zc { padding: 8px; }
+  .zc .zn { font-size: 26px; }
+  .zc dl { font-size: 12px; gap: 1px 4px; }
+  .zc .zx { font-size: 12px; }
+}
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 
@@ -147,12 +190,43 @@ th:first-child { position: sticky; left: 0; }
     <div style="color:var(--muted)">ゲーム内のカウントダウン表示で、警告・サージ開始・最終警告が来るタイミングを計算します。</div>
   </header>
 
+  <nav class="modes" aria-label="表示の切り替え">
+    <div class="seg" role="group" aria-label="表示の切り替え">
+      <button type="button" id="mLive" aria-pressed="true">ライブ</button>
+      <button type="button" id="mCalc" aria-pressed="false">計算</button>
+    </div>
+  </nav>
+
+  <section id="liveSec">
+    <div class="panel stack">
+      <div class="lclock"><span class="big" id="lClock">0:00</span><span class="ph" id="lPhase"></span></div>
+      <div class="lcap" id="lNote"></div>
+      <div class="lbtns">
+        <button type="button" class="btn pri" id="lStart">ゲームスタート</button>
+        <span class="lcap">時間の補正</span>
+        <button type="button" class="btn sm" data-adj="-10">−10秒</button>
+        <button type="button" class="btn sm" data-adj="-1">−1秒</button>
+        <button type="button" class="btn sm" data-adj="1">+1秒</button>
+        <button type="button" class="btn sm" data-adj="10">+10秒</button>
+      </div>
+    </div>
+    <div class="zcs" id="lZones"></div>
+    <div class="panel stack">
+      <div class="lst"><span class="s" id="lStat">開始前</span><span class="acc" id="lAcc"></span></div>
+      <div class="abar" id="lBar"></div>
+      <button type="button" class="btn storm" id="lStorm">ストーム突入</button>
+      <div class="lbtns"><button type="button" class="btn sm" id="lUndo">直前の操作を取り消す</button></div>
+    </div>
+    <div class="lcap" id="lCap"></div>
+    <div class="cards" id="lCards"></div>
+  </section>
+
   <section id="resSec">
     <h2><span class="mi">schedule</span>結果</h2>
     <div class="cards" id="cards"></div>
   </section>
 
-  <section>
+  <section id="inSec">
     <details id="inDet" open>
     <summary class="ribbon"><span class="mi">tune</span><span>入力</span><span class="rsum" id="inSum"></span><span class="mi chev">expand_more</span></summary>
     <div class="cols">
@@ -407,6 +481,8 @@ th:first-child { position: sticky; left: 0; }
   }
   function surgeOf(z) { var v = $("sg" + z).value.trim(); return v === "" ? "―" : (/^\d+$/.test(v) ? v + "人超" : v); }
 
+  function params() { return { w: num("tW", 500), i: num("tI", 600), k: num("tK", 800), mul: Math.max(1, num("mul", 3)), coef: Math.max(0, num("k", 1)) }; }
+
   function render() {
     var z = parseInt($("zone").value, 10) || 0, zi = info[z];
     var wl = ZONES[z][3], sl = ZONES[z][4];
@@ -422,7 +498,7 @@ th:first-child { position: sticky; left: 0; }
     var rem = Math.min(remSel, len);
     $("remTip").textContent = "Zone " + z + " の" + (ph === "w" ? "待機" : "収縮") + "は " + fmt(len) + " からカウントダウンします。";
     var T0 = (ph === "w" ? zi.w : zi.e) - rem;
-    var p = { w: num("tW", 500), i: num("tI", 600), k: num("tK", 800), mul: Math.max(1, num("mul", 3)), coef: Math.max(0, num("k", 1)) };
+    var p = params();
     var A0 = Math.max(0, num("pre", 0));
     var r = simulate(T0, A0, p);
 
@@ -437,6 +513,7 @@ th:first-child { position: sticky; left: 0; }
       if (e) {
         h += '<div class="zp">' + zp(e.seg) + '</div><div class="big">' + cd(e.seg, e.t) + '</div>';
         h += '<div class="rel">' + (e.pre ? "入る前に到達済み" : "入ってから " + dur(e.t - T0)) + '</div>';
+        if (!e.pre) h += '<div class="sub">開始から ' + fmt(e.t - e.seg.s) + '後</div>';
         h += '<div class="sub">蓄積 ' + num1(e.a) + '</div>';
       } else {
         h += '<div class="big">―</div><div class="sub">毎秒ダメージが0のため到達しません</div>';
@@ -518,6 +595,153 @@ th:first-child { position: sticky; left: 0; }
     $("chart").innerHTML = s;
   }
 
+  // ライブ：スタートを0秒とし、32秒でゾーン1開始（内部の経過秒は info[1].s から逆算してずらす）
+  var LIVE_Z1 = 32, LIVE_DROP = 7, LIVE_OFF = info[1].s - LIVE_Z1;
+  var live = { start: 0, log: [] };
+  try {
+    var lv = JSON.parse(localStorage.getItem("ssc-live-v1") || "null");
+    if (lv && typeof lv.start === "number" && Array.isArray(lv.log)) live = { start: lv.start, log: lv.log.filter(function (x) { return typeof x === "number"; }) };
+  } catch (e) {}
+  function saveLive() { try { localStorage.setItem("ssc-live-v1", JSON.stringify(live)); } catch (e) {} }
+  var viewMode = "live";
+  try { var vm = localStorage.getItem("ssc-mode-v1"); if (vm === "live" || vm === "calc") viewMode = vm; } catch (e) {}
+
+  function stepTo(t, a, tEnd, p, ev) {
+    var thr = [["w", p.w], ["i", p.i], ["k", p.k]].sort(function (x, y) { return x[1] - y[1]; });
+    var guard = 0;
+    while (t < tEnd && guard++ < 1000) {
+      var sg = segAt(t), end = Math.min(sg.e, tEnd);
+      var rate = sg.dmg * p.coef * (a >= p.i ? p.mul : 1);
+      if (rate > 0) {
+        var nt = null;
+        for (var q = 0; q < thr.length; q++) if (a < thr[q][1]) { nt = thr[q]; break; }
+        if (nt) {
+          var tc = t + (nt[1] - a) / rate;
+          if (tc <= end) { t = tc; a = nt[1]; if (!ev[nt[0]]) ev[nt[0]] = { t: t, a: a, seg: sg }; continue; }
+        }
+        a += rate * (end - t);
+      }
+      t = end;
+    }
+    return a;
+  }
+  function liveNow() {
+    var p = params(), E = Math.max(0, (Date.now() - live.start) / 1000), M = E + LIVE_OFF;
+    var a = 0, ev = {}, inside = false, tIn = 0;
+    live.log.forEach(function (ms) {
+      var t = Math.min(M, Math.max(0, (ms - live.start) / 1000) + LIVE_OFF);
+      if (inside) a = stepTo(tIn, a, t, p, ev); else tIn = t;
+      inside = !inside;
+    });
+    if (inside) a = stepTo(tIn, a, M, p, ev);
+    return { p: p, E: E, M: M, a: a, ev: ev, inside: inside };
+  }
+  function setH(id, h) { var el = $(id); if (el._h !== h) { el._h = h; el.innerHTML = h; } }
+  function surgeTxt(i) { var v = String(surgeData[surgeMode][i] || "").trim(); return v === "" ? "―" : (/^\d+$/.test(v) ? v + "人超" : esc(v)); }
+  function zoneCard(i, title, extra, cls) {
+    var z = ZONES[i], wait = i === 0 ? LIVE_Z1 : z[3];
+    return '<div class="zc' + cls + '"><span class="zt">' + title + '</span><div class="zh"><span class="zn">Z' + z[0] + '</span>' + zimg(i) + '</div>' +
+      '<div class="zx">' + extra + '</div><dl><dt>ダメージ</dt><dd>' + z[2] + '</dd><dt>待機</dt><dd>' + (wait > 0 ? fmt(wait) : "―") +
+      '</dd><dt>収縮</dt><dd>' + (z[4] > 0 ? fmt(z[4]) : "―") + '</dd><dt>サージ人数</dt><dd>' + surgeTxt(i) + '</dd></dl></div>';
+  }
+
+  var resetArm = null;
+  function renderLive() {
+    var started = !!live.start;
+    var s = started ? liveNow() : { p: params(), E: 0, M: LIVE_OFF, a: 0, ev: {}, inside: false };
+    var p = s.p, sg = segAt(s.M), cur = sg.z, n = live.log.length;
+    $("lClock").textContent = fmt(s.E);
+    $("lPhase").textContent = sg.ph === "最終円後" ? "最終円後 " + cd(sg, s.M) : zp(sg) + " 残り " + cd(sg, s.M);
+    $("lNote").textContent = !started ? "ゲーム開始と同時に「ゲームスタート」を押してください。7秒後に降下開始、32秒後にゾーン1が始まります。"
+      : (s.E < LIVE_DROP ? "降下開始まで " + fmt(LIVE_DROP - s.E) : "");
+    if (!resetArm) $("lStart").textContent = started ? "リセット" : "ゲームスタート";
+    $("lStart").className = started ? "btn" : "btn pri";
+    document.querySelectorAll("[data-adj]").forEach(function (b) { b.disabled = !started; });
+
+    var curX = sg.ph === "最終円後" ? "最終円後" : sg.ph + "中 残り " + cd(sg, s.M);
+    var nx = cur < 12 ? zoneCard(cur + 1, "次のゾーン", "開始まで " + fmt(info[cur + 1].s - s.M), " nx") : '<div class="zc nx"><span class="zt">次のゾーン</span><div class="zx">なし</div></div>';
+    setH("lZones", zoneCard(cur, "現在のゾーン", curX, "") + nx);
+
+    var surging = s.a >= p.i;
+    $("lStat").textContent = !started ? "開始前" : s.inside ? (surging ? (n > 1 ? "再サージ中" : "サージ中") + "（×" + num1(p.mul) + "）" : (n > 1 ? "ストーム再突入中" : "ストーム内")) : (n === 0 ? "安地内" : "一時脱出中");
+    $("lStat").className = "s" + (s.inside ? " in" : "");
+    $("lAcc").textContent = "蓄積 " + Math.floor(s.a) + " / " + p.k;
+    var pc = function (v) { return Math.max(0, Math.min(100, v / p.k * 100)); };
+    setH("lBar", '<i style="width:' + pc(s.a).toFixed(1) + '%"></i><b style="left:' + pc(p.w) + '%;background:var(--caution)"></b><b style="left:' + pc(p.i) + '%;background:var(--coral)"></b>');
+    var sb = $("lStorm");
+    sb.textContent = n === 0 ? "ストーム突入" : s.inside ? "一時脱出" : "再突入";
+    sb.className = "btn storm" + (s.inside ? " out" : "");
+    sb.disabled = !started;
+    $("lUndo").disabled = n === 0;
+
+    $("lCap").textContent = !started ? "" : s.inside ? "このままストーム内にいた場合の予測" : "今ストームに入った場合の予測";
+    var fut = simulate(s.M, s.a, p), h = "";
+    CARDS.forEach(function (c) {
+      var past = s.ev[c.key], e = fut.ev[c.key];
+      h += '<div class="card ' + c.cls + '"><div class="tag"><span class="mi">' + c.icon + '</span>' + c.name + '</div>';
+      if (!started) {
+        h += '<div class="big">―</div>';
+      } else if (past || (e && e.pre)) {
+        var q = past || e;
+        h += '<div class="zp">到達済み</div><div class="big">✓</div>';
+        if (past) h += '<div class="rel">' + zp(q.seg) + ' ' + cd(q.seg, q.t) + '</div>';
+      } else if (e) {
+        h += '<div class="zp">あと</div><div class="big">' + fmt(e.t - s.M) + '</div>';
+        h += '<div class="rel">' + zp(e.seg) + ' ' + cd(e.seg, e.t) + '</div>';
+        h += '<div class="sub">開始から ' + fmt(e.t - e.seg.s) + '後</div>';
+      } else {
+        h += '<div class="big">―</div>';
+      }
+      h += '</div>';
+    });
+    setH("lCards", h);
+  }
+
+  var wakeLock = null;
+  function keepAwake() {
+    try {
+      if (viewMode === "live" && live.start && !wakeLock && navigator.wakeLock && document.visibilityState === "visible")
+        navigator.wakeLock.request("screen").then(function (l) { wakeLock = l; l.addEventListener("release", function () { wakeLock = null; }); }).catch(function () {});
+    } catch (e) {}
+  }
+  function setView(m) {
+    viewMode = m;
+    document.body.classList.toggle("live", m === "live");
+    $("mLive").setAttribute("aria-pressed", m === "live" ? "true" : "false");
+    $("mCalc").setAttribute("aria-pressed", m === "calc" ? "true" : "false");
+    try { localStorage.setItem("ssc-mode-v1", m); } catch (e) {}
+    if (m === "live") { renderLive(); keepAwake(); } else render();
+  }
+  $("mLive").addEventListener("click", function () { setView("live"); });
+  $("mCalc").addEventListener("click", function () { setView("calc"); });
+  $("lStart").addEventListener("click", function () {
+    if (!live.start) {
+      live = { start: Date.now(), log: [] };
+    } else if (!resetArm) {
+      this.textContent = "もう一度押すとリセット";
+      resetArm = setTimeout(function () { resetArm = null; renderLive(); }, 3000);
+      return;
+    } else {
+      clearTimeout(resetArm); resetArm = null;
+      live = { start: 0, log: [] };
+      try { if (wakeLock) wakeLock.release(); } catch (e) {}
+    }
+    saveLive(); renderLive(); keepAwake();
+  });
+  $("lStorm").addEventListener("click", function () { if (!live.start) return; live.log.push(Date.now()); saveLive(); renderLive(); });
+  $("lUndo").addEventListener("click", function () { live.log.pop(); saveLive(); renderLive(); });
+  document.querySelectorAll("[data-adj]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (!live.start) return;
+      live.start = Math.min(Date.now(), live.start - parseFloat(b.getAttribute("data-adj")) * 1000);
+      saveLive(); renderLive();
+    });
+  });
+  setInterval(function () { if (viewMode === "live" && live.start) renderLive(); }, 250);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && viewMode === "live") { renderLive(); keepAwake(); }
+  });
+
   buildZoneTable();
   ["zone", "ph", "pre", "tW", "tI", "tK", "mul", "k"].forEach(function (id) {
     $(id).addEventListener("input", render);
@@ -540,6 +764,7 @@ th:first-child { position: sticky; left: 0; }
   $("mDuo").setAttribute("aria-pressed", surgeMode === "duo" ? "true" : "false");
   window.addEventListener("resize", function () { if (drawChart.last) drawChart.apply(null, drawChart.last); });
   render();
+  setView(viewMode);
 })();
 </script>
 </body>
