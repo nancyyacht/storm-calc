@@ -169,8 +169,24 @@ body:not(.live) #liveSec { display: none; }
 .abar { position: relative; height: 12px; background: var(--band); border: 1px solid var(--line); }
 .abar > i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--navy-text); }
 .abar > b { position: absolute; top: -4px; bottom: -4px; width: 2px; }
+.zc.cur { background: var(--navy); color: var(--on-navy); border: 2px solid var(--mustard); border-top-width: 4px; }
+.zc.cur .zt, .zc.cur dt { color: var(--on-navy); opacity: 0.75; }
+.zc.cur .zn { color: var(--on-navy); }
+.pht { display: inline-block; padding: 0 6px; font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; }
+.pht.pw { background: var(--mustard); color: #252420; }
+.pht.ps { background: var(--coral); color: #FFFFFF; }
+.zc .cdn { font-size: 22px; font-weight: 700; vertical-align: -2px; }
+.ltop { padding: 8px 12px; gap: 6px; }
+.ltop .lclock .big { font-size: 34px; }
+.ltop .lbtns { gap: 4px; }
+.lcards .card .big { font-size: 48px; letter-spacing: -0.02em; }
 @media (max-width: 560px) {
   .lclock .big { font-size: 34px; }
+  .ltop .lclock .big { font-size: 28px; }
+  .modes .seg button { font-size: 13px; padding: 4px; }
+  .lcards .card .big { font-size: 34px; }
+  .lcards .card .zp { font-size: 12px; }
+  .zc .cdn { font-size: 20px; }
   .lclock .ph { font-size: 16px; }
   .zcs { gap: 6px; }
   .zc { padding: 8px; }
@@ -198,27 +214,27 @@ body:not(.live) #liveSec { display: none; }
   </nav>
 
   <section id="liveSec">
-    <div class="panel stack">
+    <div class="panel stack ltop">
       <div class="lclock"><span class="big" id="lClock">0:00</span><span class="ph" id="lPhase"></span></div>
       <div class="lcap" id="lNote"></div>
       <div class="lbtns">
         <button type="button" class="btn pri" id="lStart">ゲームスタート</button>
-        <span class="lcap">時間の補正</span>
-        <button type="button" class="btn sm" data-adj="-10">−10秒</button>
-        <button type="button" class="btn sm" data-adj="-1">−1秒</button>
-        <button type="button" class="btn sm" data-adj="1">+1秒</button>
-        <button type="button" class="btn sm" data-adj="10">+10秒</button>
+        <span class="lcap" id="lAdjL">補正</span>
+        <button type="button" class="btn sm" data-adj="-10" aria-label="時間の補正 −10秒">−10</button>
+        <button type="button" class="btn sm" data-adj="-1" aria-label="時間の補正 −1秒">−1</button>
+        <button type="button" class="btn sm" data-adj="1" aria-label="時間の補正 +1秒">+1</button>
+        <button type="button" class="btn sm" data-adj="10" aria-label="時間の補正 +10秒">+10</button>
       </div>
     </div>
     <div class="zcs" id="lZones"></div>
+    <div class="lcap" id="lCap"></div>
+    <div class="cards lcards" id="lCards"></div>
     <div class="panel stack">
       <div class="lst"><span class="s" id="lStat">開始前</span><span class="acc" id="lAcc"></span></div>
       <div class="abar" id="lBar"></div>
       <button type="button" class="btn storm" id="lStorm">ストーム突入</button>
       <div class="lbtns"><button type="button" class="btn sm" id="lUndo">直前の操作を取り消す</button></div>
     </div>
-    <div class="lcap" id="lCap"></div>
-    <div class="cards" id="lCards"></div>
   </section>
 
   <section id="resSec">
@@ -645,22 +661,29 @@ body:not(.live) #liveSec { display: none; }
       '</dd><dt>収縮</dt><dd>' + (z[4] > 0 ? fmt(z[4]) : "―") + '</dd><dt>サージ人数</dt><dd>' + surgeTxt(i) + '</dd></dl></div>';
   }
 
+  // カウントダウンは切り上げ（0:00 は本当に0秒になった時だけ出す）
+  function up(x) { return fmt(Math.ceil(x - 1e-6)); }
+  function cdUp(sg, t) { return sg.e === Infinity ? "+" + fmt(Math.floor(t - sg.s)) : up(sg.e - t); }
+  function phTag(ph) { return '<span class="pht ' + (ph === "収縮" ? "ps" : "pw") + '">' + ph + '中</span>'; }
+
   var resetArm = null;
   function renderLive() {
     var started = !!live.start;
     var s = started ? liveNow() : { p: params(), E: 0, M: LIVE_OFF, a: 0, ev: {}, inside: false };
     var p = s.p, sg = segAt(s.M), cur = sg.z, n = live.log.length;
-    $("lClock").textContent = fmt(s.E);
-    $("lPhase").textContent = sg.ph === "最終円後" ? "最終円後 " + cd(sg, s.M) : zp(sg) + " 残り " + cd(sg, s.M);
+    $("lClock").textContent = fmt(Math.floor(s.E));
+    $("lPhase").textContent = sg.ph === "最終円後" ? "最終円後 " + cd(sg, s.M) : zp(sg) + " 残り " + cdUp(sg, s.M);
     $("lNote").textContent = !started ? "ゲーム開始と同時に「ゲームスタート」を押してください。7秒後に降下開始、32秒後にゾーン1が始まります。"
-      : (s.E < LIVE_DROP ? "降下開始まで " + fmt(LIVE_DROP - s.E) : "");
+      : (s.E < LIVE_DROP ? "降下開始まで " + up(LIVE_DROP - s.E) : "");
+    $("lNote").hidden = !$("lNote").textContent;
+    $("lAdjL").hidden = !started;
     if (!resetArm) $("lStart").textContent = started ? "リセット" : "ゲームスタート";
-    $("lStart").className = started ? "btn" : "btn pri";
+    $("lStart").className = started ? "btn sm" : "btn pri";
     document.querySelectorAll("[data-adj]").forEach(function (b) { b.disabled = !started; });
 
-    var curX = sg.ph === "最終円後" ? "最終円後" : sg.ph + "中 残り " + cd(sg, s.M);
-    var nx = cur < 12 ? zoneCard(cur + 1, "次のゾーン", "開始まで " + fmt(info[cur + 1].s - s.M), " nx") : '<div class="zc nx"><span class="zt">次のゾーン</span><div class="zx">なし</div></div>';
-    setH("lZones", zoneCard(cur, "現在のゾーン", curX, "") + nx);
+    var curX = sg.ph === "最終円後" ? "最終円後 " + cdUp(sg, s.M) : phTag(sg.ph) + ' 残り <span class="cdn">' + cdUp(sg, s.M) + "</span>";
+    var nx = cur < 12 ? zoneCard(cur + 1, "次のゾーン", "開始まで " + up(info[cur + 1].s - s.M), " nx") : '<div class="zc nx"><span class="zt">次のゾーン</span><div class="zx">なし</div></div>';
+    setH("lZones", zoneCard(cur, "現在のゾーン", curX, " cur") + nx);
 
     var surging = s.a >= p.i;
     $("lStat").textContent = !started ? "開始前" : s.inside ? (surging ? (n > 1 ? "再サージ中" : "サージ中") + "（×" + num1(p.mul) + "）" : (n > 1 ? "ストーム再突入中" : "ストーム内")) : (n === 0 ? "安地内" : "一時脱出中");
@@ -686,7 +709,7 @@ body:not(.live) #liveSec { display: none; }
         h += '<div class="zp">到達済み</div><div class="big">✓</div>';
         if (past) h += '<div class="rel">' + zp(q.seg) + ' ' + cd(q.seg, q.t) + '</div>';
       } else if (e) {
-        h += '<div class="zp">あと</div><div class="big">' + fmt(e.t - s.M) + '</div>';
+        h += '<div class="zp">あと</div><div class="big">' + up(e.t - s.M) + '</div>';
         h += '<div class="rel">' + zp(e.seg) + ' ' + cd(e.seg, e.t) + '</div>';
         h += '<div class="sub">開始から ' + fmt(e.t - e.seg.s) + '後</div>';
       } else {
