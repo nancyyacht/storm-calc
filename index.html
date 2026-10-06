@@ -310,8 +310,8 @@ body:not(.live) #liveSec { display: none; }
       <tbody id="zrows"></tbody>
     </table></div>
     <div class="aside"><span class="label">補足：</span>
-      <div style="margin-top:4px">サージ人数は、ストームサージ（ダメージや撃破の少ないチームが削られる仕組み）が発動する残り人数です。SoloとDuoには同じ値として、提供された表（ゾーン2〜3は90人超、4は78人超、5は64人超、6は54人超、7は44人超、8は40人超、9以降は30人超）を入れています。ゾーン0〜1は表にないため「なし」としています。SoloとDuoで違いがあれば、それぞれ、ゲーム内の値に合わせて書き換えられます。入力した値はこのブラウザに保存されます。</div>
-      <div style="margin-top:6px">出典：ユーザー提供の表（2026/10/5）</div>
+      <div style="margin-top:4px">サージ人数は、ストームサージ（ダメージや撃破の少ないチームが削られる仕組み）が発動する残り人数です。提供された最新の表（ゾーン1は100人超、2〜3は90人超、4はSoloが75人超・Duoが76人超、5は60人超、6は50人超、7以降は40人超）を入れています。ゾーン0は表にないため「なし」としています。ゲーム内の値と違えば、SoloとDuoそれぞれ書き換えられます。入力した値はこのブラウザに保存されます。</div>
+      <div style="margin-top:6px">出典：ユーザー提供の最新の表（2026/10/6）。同じ表で、サージのダメージは25、間隔は5秒（Solo・Duo・Trio・Squads共通）</div>
     </div>
   </section>
 
@@ -349,15 +349,15 @@ body:not(.live) #liveSec { display: none; }
   ];
   var EMPTY13 = ["", "", "", "", "", "", "", "", "", "", "", "", ""];
   var surgeMode = "duo";
-  var surgeData = { duo: ["なし", "なし", "90", "90", "78", "64", "54", "44", "40", "30", "30", "30", "30"], solo: ["なし", "なし", "90", "90", "78", "64", "54", "44", "40", "30", "30", "30", "30"] };
+  var surgeData = { duo: ["なし", "100", "90", "90", "76", "60", "50", "40", "40", "40", "40", "40", "40"], solo: ["なし", "100", "90", "90", "75", "60", "50", "40", "40", "40", "40", "40", "40"] };
   try {
-    var saved = JSON.parse(localStorage.getItem("ssc-surge-v3") || "null");
+    var saved = JSON.parse(localStorage.getItem("ssc-surge-v4") || "null");
     if (saved && saved.data && saved.data.duo && saved.data.solo && saved.data.duo.length === 13 && saved.data.solo.length === 13) {
       surgeData = { duo: saved.data.duo.map(String), solo: saved.data.solo.map(String) };
       if (saved.mode === "solo" || saved.mode === "duo") surgeMode = saved.mode;
     }
   } catch (e) {}
-  function saveSurge() { try { localStorage.setItem("ssc-surge-v3", JSON.stringify({ mode: surgeMode, data: surgeData })); } catch (e) {} }
+  function saveSurge() { try { localStorage.setItem("ssc-surge-v4", JSON.stringify({ mode: surgeMode, data: surgeData })); } catch (e) {} }
   function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;"); }
   function setSurgeMode(m) {
     surgeMode = m;

@@ -10,7 +10,7 @@
 | 場所 | URL | 備考 |
 |---|---|---|
 | GitHub（本リポジトリ） | https://github.com/nancyyacht/storm-calc | `index.html` が正本。Pages 公開URL：`https://nancyyacht.github.io/storm-calc/`（2026-10-06 に表示を確認済み）。旧ユーザー名 `amuzaq` から変更済みで、旧URLは使えない |
-| claude.ai Artifact | https://claude.ai/artifact/Fe4fk5Bb8qqtpq6KV3wPU8（Version 20） | 公開時に `<!doctype>`・viewport が自動で付く。GitHub版はこれらを手書きで足してある |
+| claude.ai Artifact | https://claude.ai/artifact/Fe4fk5Bb8qqtpq6KV3wPU8（Version 21） | 公開時に `<!doctype>`・viewport が自動で付く。GitHub版はこれらを手書きで足してある |
 
 - 内容を直したら**両方**を更新する。Artifact は同じURLを指定して再公開すれば、リンクは変わらない（Artifact の `url` 指定が必要）。
 - Artifact側の元ファイルは、前のセッションの作業フォルダにあり、引き継がれない。GitHub の `index.html` から、先頭の `<!doctype>〜<head>` の手書き部分（`<meta name="viewport">` と末尾の `[hidden]` などの小さな `<style>`）を除いて公開する。
@@ -75,9 +75,10 @@
 - ライブのカウントダウンは切り上げ表示（四捨五入だと1秒早く 0:00 になるため）。経過時間は切り捨て。
 
 ## サージ人数（ゾーン別表の列）
-- ユーザー提供の表（出典は別途未確認）：Z2〜3=90人超、Z4=78人超、Z5=64人超、Z6=54人超、Z7=44人超、Z8=40人超、Z9以降=30人超、Z0〜1=なし。
-- Solo と Duo は**同じ値**（ユーザー指示）。切り替えボタンは残してあり、別々に書き換えられる。
-- ブラウザの `localStorage`（キー `ssc-surge-v3`）に保存。値の構造を変えたらキーを上げる。
+- ユーザー提供の最新の表（2026-10-06）：Z1=100、Z2〜3=90、Z4=Solo 75／Duo 76、Z5=60、Z6=50、Z7〜12=40（表示は「N人超」）。Z0 は表にないので「なし」。Trio・Squads も Solo と同じ値。
+- 同じ表で、サージのダメージは25、間隔（Tick Interval）は5秒、Dealt・Taken はいずれも1x。計算機ではまだ使っていない。
+- Z4 だけ Solo と Duo で値が違う（表のとおり）。それ以外は同じ値。
+- ブラウザの `localStorage`（キー `ssc-surge-v4`）に保存。初期値や値の構造を変えたらキーを上げる（上げないと、保存済みの古い値が表示され続ける）。
 - 以前の調査（ゲーム公式のサージ人数は時期で変わる）の値は使っていない。現行 C7S4 の値は未確認。
 
 ## 画面の決定事項（変えないこと）
