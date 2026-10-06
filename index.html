@@ -151,8 +151,10 @@ body:not(.live) #liveSec { display: none; }
 .btn.storm.out { background: var(--ok); border-color: var(--ok); }
 .btn:disabled { opacity: 0.45; cursor: default; }
 .btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-.zcs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.zc { background: var(--panel); border: 1px solid var(--line); border-top: 4px solid var(--navy); padding: 10px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.zcs { position: relative; display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
+.zcs::-webkit-scrollbar { display: none; }
+.zc { flex: 0 0 calc(46% - 5px); scroll-snap-align: start; background: var(--panel); border: 1px solid var(--line); border-top: 4px solid var(--navy); padding: 10px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.zc.past { opacity: 0.55; }
 .zc.nx { border-top-color: var(--muted); }
 .zc .zt { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 12px; color: var(--muted); }
 .zc .zh { display: flex; align-items: center; gap: 8px; min-height: 34px; }
@@ -659,10 +661,12 @@ body:not(.live) #liveSec { display: none; }
   }
   function setH(id, h) { var el = $(id); if (el._h !== h) { el._h = h; el.innerHTML = h; } }
   function surgeTxt(i) { var v = String(surgeData[surgeMode][i] || "").trim(); return v === "" ? "―" : (/^\d+$/.test(v) ? v + "人超" : esc(v)); }
-  function zoneCard(i, title, extra, cls) {
-    var z = ZONES[i], wait = i === 0 ? LIVE_Z1 : z[3];
-    return '<div class="zc' + cls + '"><span class="zt">' + title + '</span><div class="zh"><span class="zn">Z' + z[0] + '</span>' + zimg(i) + '</div>' +
-      '<div class="zx">' + extra + '</div><dl><dt>ダメージ</dt><dd>' + z[2] + '</dd><dt>待機</dt><dd>' + (wait > 0 ? fmt(wait) : "―") +
+  // ゾーンのカードは Z0〜Z12 を横に並べ、スライドで見られる。操作をやめて4秒たつと現在のゾーンに戻る
+  var zBuilt = "", zCur = -1, zBack = null, zProg = 0;
+  function zoneCard(i) {
+    var z = ZONES[i], wait = z[3];
+    return '<div class="zc" id="zc' + i + '"><span class="zt" id="zt' + i + '"></span><div class="zh"><span class="zn">Z' + z[0] + '</span>' + zimg(i) + '</div>' +
+      '<div class="zx" id="zx' + i + '"></div><dl><dt>ダメージ</dt><dd>' + z[2] + '</dd><dt>待機</dt><dd>' + (wait > 0 ? fmt(wait) : "―") +
       '</dd><dt>収縮</dt><dd>' + (z[4] > 0 ? fmt(z[4]) : "―") + '</dd><dt>サージ人数</dt><dd>' + surgeTxt(i) + '</dd></dl></div>';
   }
 
@@ -675,6 +679,31 @@ body:not(.live) #liveSec { display: none; }
     return '<span class="zpl">Z' + sg.z + ' <span class="pht ' + (sg.ph === "収縮" ? "ps" : "pw") + '">' + sg.ph + "</span> " + cd(sg, t) + "</span>";
   }
   function phTag(ph) { return '<span class="pht ' + (ph === "収縮" ? "ps" : "pw") + '">' + ph + '中</span>'; }
+
+  function setT(id, t) { var el = $(id); if (el.textContent !== t) el.textContent = t; }
+  function buildZones() {
+    var key = JSON.stringify(surgeData[surgeMode]);
+    if (key === zBuilt) return;
+    zBuilt = key; zCur = -1;
+    var h = "";
+    for (var i = 0; i < ZONES.length; i++) h += zoneCard(i);
+    $("lZones").innerHTML = h;
+  }
+  function snapCur(smooth) {
+    var el = $("lZones"), c = $("zc" + zCur);
+    if (!c || !el.clientWidth) return;
+    zProg = Date.now() + 1200;
+    el.scrollTo({ left: c.offsetLeft, behavior: smooth ? "smooth" : "auto" });
+    // なめらかなスクロールが途中で止まった場合に備えて、少し後に位置を確かめる
+    if (smooth) setTimeout(function () {
+      var max = el.scrollWidth - el.clientWidth, want = Math.min(c.offsetLeft, max);
+      if (!zBack && Math.abs(el.scrollLeft - want) > 2) { zProg = Date.now() + 600; el.scrollLeft = want; }
+    }, 900);
+  }
+  function userSwipe() {
+    clearTimeout(zBack);
+    zBack = setTimeout(function () { zBack = null; snapCur(true); }, 4000);
+  }
 
   var resetArm = null;
   function renderLive() {
@@ -691,9 +720,17 @@ body:not(.live) #liveSec { display: none; }
     $("lStart").className = started ? "btn sm reset" : "btn pri";
     document.querySelectorAll("[data-adj]").forEach(function (b) { b.disabled = !started; });
 
+    buildZones();
+    for (var i = 0; i < ZONES.length; i++) {
+      var cls = "zc" + (i < cur ? " past" : i === cur ? " cur" : i === cur + 1 ? " nx" : "");
+      var c = $("zc" + i);
+      if (c.className !== cls) c.className = cls;
+      setT("zt" + i, i < cur ? "終了したゾーン" : i === cur ? "現在のゾーン" : i === cur + 1 ? "次のゾーン" : "先のゾーン");
+      if (i !== cur) setH("zx" + i, i < cur ? "終了" : "開始まで " + up(info[i].s - s.M));
+    }
     var curX = sg.ph === "最終円後" ? "最終円後 " + cdUp(sg, s.M) : phTag(sg.ph) + ' 残り <span class="cdn">' + cdUp(sg, s.M) + "</span>";
-    var nx = cur < 12 ? zoneCard(cur + 1, "次のゾーン", "開始まで " + up(info[cur + 1].s - s.M), " nx") : '<div class="zc nx"><span class="zt">次のゾーン</span><div class="zx">なし</div></div>';
-    setH("lZones", zoneCard(cur, "現在のゾーン", curX, " cur") + nx);
+    setH("zx" + cur, curX);
+    if (cur !== zCur) { zCur = cur; if (!zBack) snapCur(false); }
 
     var surging = s.a >= p.i;
     $("lStat").textContent = !started ? "開始前" : s.inside ? (surging ? (n > 1 ? "再サージ中" : "サージ中") + "（×" + num1(p.mul) + "）" : (n > 1 ? "ストーム再突入中" : "ストーム内")) : (n === 0 ? "安地内" : "一時脱出中");
@@ -743,8 +780,11 @@ body:not(.live) #liveSec { display: none; }
     $("mLive").setAttribute("aria-pressed", m === "live" ? "true" : "false");
     $("mCalc").setAttribute("aria-pressed", m === "calc" ? "true" : "false");
     try { localStorage.setItem("ssc-mode-v1", m); } catch (e) {}
-    if (m === "live") { renderLive(); keepAwake(); } else render();
+    if (m === "live") { zCur = -1; renderLive(); keepAwake(); } else render();
   }
+  $("lZones").addEventListener("scroll", function () { if (Date.now() > zProg) userSwipe(); });
+  $("lZones").addEventListener("pointerdown", userSwipe);
+  $("lZones").addEventListener("touchstart", userSwipe, { passive: true });
   $("mLive").addEventListener("click", function () { setView("live"); });
   $("mCalc").addEventListener("click", function () { setView("calc"); });
   $("lStart").addEventListener("click", function () {
