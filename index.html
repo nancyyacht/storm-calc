@@ -1,0 +1,531 @@
+<title>ストームシックネス計算機</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<style>
+/* Layout: 結果3枚を最上部に、入力は左・グラフは右の2カラム、下にゾーン表と区間表。やさしいグレー仕様。時間表記はゲーム内カウントダウン */
+:root {
+  --bg: #F5F5F0; --panel: #FFFFFF; --text: #252420; --muted: #787774; --line: #DDDDD4;
+  --navy: #33506B; --on-navy: #FFFFFF; --navy-text: #33506B; --navy-soft: #ECF0F4; --note: #1F4D78;
+  --coral: #E16259; --blue: #337EA9; --mustard: #D6AD32; --mustard-soft: #F4EED9;
+  --ok: #448361; --caution: #CB912F; --ng: #D44C47; --band: #EEEEE8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1C1D1B; --panel: #262725; --text: #ECEBE4; --muted: #A09F98; --line: #3A3B37;
+    --navy-text: #9DBBD6; --navy-soft: #2A3441; --note: #A9C6E2; --blue: #5AA3CC;
+    --mustard-soft: #3A3626; --band: #2D2E2B; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1C1D1B; --panel: #262725; --text: #ECEBE4; --muted: #A09F98; --line: #3A3B37;
+  --navy-text: #9DBBD6; --navy-soft: #2A3441; --note: #A9C6E2; --blue: #5AA3CC;
+  --mustard-soft: #3A3626; --band: #2D2E2B; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: "Roboto", "Zen Kaku Gothic New", sans-serif; font-size: 14px; line-height: 1.6; padding-inline: 16px; padding-block: 24px 48px; }
+.wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.meta { color: var(--muted); font-size: 12px; border-bottom: 0.5pt solid var(--line); padding-bottom: 6px; }
+.title { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 28px; color: var(--navy-text); line-height: 1.3; margin: 0; text-wrap: balance; }
+h2 { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 18px; color: var(--on-navy); background: var(--navy); padding: 2px 0 2px 8px; margin: 0; display: flex; align-items: center; gap: 6px; }
+h3 { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 15px; color: var(--navy-text); border-bottom: 1.5pt solid var(--navy-text); padding-bottom: 3px; margin: 0 0 10px; }
+.mi { font-family: "Material Symbols Outlined"; font-weight: 400; font-size: 20px; line-height: 1; font-style: normal; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; font-feature-settings: "liga"; -webkit-font-feature-settings: "liga"; vertical-align: middle; }
+section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); padding: 14px; min-width: 0; }
+.cols { display: grid; grid-template-columns: minmax(0, 420px); gap: 16px; align-items: start; }
+@media (max-width: 760px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.tip { font-size: 12px; color: var(--muted); }
+.wheelbox { position: relative; height: 120px; border: 1px solid var(--line); background: var(--bg); }
+.wheelbox::before { content: ""; position: absolute; left: 0; right: 0; top: 40px; height: 40px; background: var(--navy-soft); border-block: 1.5px solid var(--navy-text); pointer-events: none; }
+.wheel { position: relative; height: 100%; overflow-y: auto; scroll-snap-type: y mandatory; padding-block: 40px; overscroll-behavior: contain; touch-action: pan-y; scrollbar-width: none; }
+.wheel::-webkit-scrollbar { display: none; }
+.wheel div { height: 40px; display: flex; align-items: center; justify-content: center; scroll-snap-align: center; font-size: 20px; font-variant-numeric: tabular-nums; color: var(--muted); cursor: pointer; user-select: none; -webkit-user-select: none; }
+.wheel div.on { color: var(--text); font-weight: 700; }
+.wheel:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field > label { font-size: 12px; color: var(--muted); letter-spacing: 0.03em; }
+input, select { font: inherit; font-size: 16px; color: var(--text); background: var(--bg); border: 1px solid var(--line); padding: 7px 8px; width: 100%; min-width: 0; font-variant-numeric: tabular-nums; }
+input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+.row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+details summary { cursor: pointer; font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; color: var(--navy-text); display: flex; align-items: center; gap: 4px; padding: 4px 0; }
+details[open] summary { margin-bottom: 10px; }
+.entry { font-size: 12px; color: var(--muted); border-top: 0.5pt solid var(--line); padding-top: 10px; }
+.entry b { color: var(--text); font-weight: 500; }
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-top-width: 4px; padding: 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.card.warn { border-top-color: var(--caution); } .card.infl { border-top-color: var(--coral); } .card.kill { border-top-color: var(--ng); }
+.card .tag { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 4px; }
+.card.warn .tag { color: var(--caution); } .card.infl .tag { color: var(--coral); } .card.kill .tag { color: var(--ng); }
+.card .zp { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 18px; margin-top: 2px; }
+.card .big { font-size: 38px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.card .sub { font-size: 12px; color: var(--muted); }
+.card .rel { font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; margin-top: 4px; }
+.chart { overflow-x: auto; }
+.chart svg { display: block; width: 100%; height: auto; }
+.ax { fill: var(--muted); font-size: 11px; font-family: "Roboto", sans-serif; }
+.zlab { fill: var(--muted); font-size: 10px; font-family: "Roboto", sans-serif; }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th { background: var(--navy); color: var(--on-navy); font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; text-align: right; padding: 6px 8px; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+td { padding: 6px 8px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+tbody tr:nth-child(even) td { background: var(--navy-soft); }
+td.ev { text-align: left; font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; }
+td.ev.w { color: var(--caution); } td.ev.i { color: var(--coral); } td.ev.k { color: var(--ng); }
+tr.sick td:first-child { color: var(--coral); font-weight: 500; }
+td input.sg { width: 76px; padding: 3px 6px; font-size: 13px; text-align: right; }
+.point { background: var(--mustard-soft); border-left: 3px solid var(--mustard); padding: 8px 12px; }
+.point .label { font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; color: var(--mustard); }
+.point ul { margin: 4px 0 0; padding-left: 18px; font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 500; color: var(--note); }
+.aside { background: var(--navy-soft); border-left: 3px solid var(--blue); padding: 8px 12px; font-size: 13px; }
+.aside .label { font-weight: 700; color: var(--blue); }
+.aside a { color: var(--blue); }
+.seg { display: flex; border: 1px solid var(--line); }
+.seg button { flex: 1; font: inherit; font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 15px; padding: 8px 4px; border: 0; background: var(--panel); color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--navy); color: var(--on-navy); }
+.seg button:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+.ribbon { list-style: none; cursor: pointer; background: var(--navy); color: var(--on-navy); font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 18px; padding: 6px 8px; display: flex; align-items: center; gap: 6px; }
+.ribbon::-webkit-details-marker { display: none; }
+.ribbon .rsum { margin-left: auto; font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.ribbon .chev { transition: transform 0.2s; }
+details[open] > .ribbon .chev { transform: rotate(180deg); }
+.ribbon:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.done { display: none; font: inherit; font-family: "Zen Kaku Gothic New", sans-serif; font-weight: 700; font-size: 16px; padding: 10px; border: 0; background: var(--navy); color: var(--on-navy); width: 100%; cursor: pointer; }
+@media (max-width: 760px) { .done { display: block; } }
+#zoneSec { order: 1; } #brkSec { order: 2; } #noteSec { order: 3; } #chartSec { order: 4; }
+td.evc { text-align: center; color: var(--muted); }
+td.evc b { display: block; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 15px; line-height: 1.2; }
+td.evc .pl { display: block; font-size: 10px; line-height: 1.1; color: var(--muted); }
+td.ci b { color: var(--coral); } td.ck b { color: var(--ng); }
+.in { font-size: 10px; font-weight: 700; color: var(--blue); margin-left: 3px; }
+td:first-child { background: var(--panel); position: sticky; left: 0; }
+th:first-child { position: sticky; left: 0; }
+.zi { vertical-align: middle; margin-left: 6px; background: #FFFFFF; border: 1px solid var(--line); }
+@media (max-width: 760px) {
+  .wrap > header { display: none !important; }
+  body { padding-block-start: 0; }
+  #resSec { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); margin-inline: -16px; padding: 6px 16px; border-bottom: 1px solid var(--line); gap: 0; }
+  #resSec h2 { display: none; }
+  .title { font-size: 24px; }
+  table { font-size: 12px; }
+  th, td { padding: 6px; }
+}
+@media (max-width: 560px) {
+  .wide { display: none; }
+  th, td { padding: 6px 4px; }
+  td input.sg { width: 54px; padding: 3px 4px; }
+  td.evc b { font-size: 14px; }
+  .cards { gap: 6px; }
+  .card { padding: 8px; border-top-width: 3px; }
+  .card .tag { font-size: 11px; gap: 2px; flex-wrap: wrap; }
+  .card .tag .mi { font-size: 16px; }
+  .card .zp { font-size: 14px; margin-top: 0; }
+  .card .big { font-size: 28px; }
+  .card .rel { font-size: 11px; margin-top: 2px; }
+  .card .sub { font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:8px">
+    <div class="meta">バトルロイヤル / 大会 / シーズン C7S4 Override / アップデート 42.00（2026/8/21 1:51:05）の数値を使用</div>
+    <h1 class="title">ストームシックネス計算機</h1>
+    <div style="color:var(--muted)">ゲーム内のカウントダウン表示で、警告・サージ開始・最終警告が来るタイミングを計算します。</div>
+  </header>
+
+  <section id="resSec">
+    <h2><span class="mi">schedule</span>結果</h2>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section>
+    <details id="inDet" open>
+    <summary class="ribbon"><span class="mi">tune</span><span>入力</span><span class="rsum" id="inSum"></span><span class="mi chev">expand_more</span></summary>
+    <div class="cols">
+      <div class="panel stack">
+        <div class="row">
+          <div class="field"><label for="zone">ゾーン</label><select id="zone"></select></div>
+          <div class="field"><label for="ph">フェーズ</label>
+            <select id="ph"><option value="w">待機</option><option value="s" selected>収縮</option></select></div>
+        </div>
+        <div class="field"><label id="wheelLbl">入った時のカウントダウン残り（10秒ごと）</label>
+          <div class="wheelbox"><div class="wheel" id="wheel" role="listbox" tabindex="0" aria-labelledby="wheelLbl"></div></div>
+          <span class="tip" id="remTip"></span></div>
+        <div class="field"><label for="pre">入る前からの蓄積ストームダメージ</label>
+          <input id="pre" type="number" min="0" step="1" value="0" inputmode="numeric"></div>
+        <details>
+          <summary><span class="mi">tune</span>しきい値・倍率の設定</summary>
+          <div class="stack">
+            <div class="row">
+              <div class="field"><label for="tW">警告</label><input id="tW" type="number" value="500" min="0" step="1"></div>
+              <div class="field"><label for="tI">サージ開始</label><input id="tI" type="number" value="600" min="0" step="1"></div>
+              <div class="field"><label for="tK">最終警告（キル）</label><input id="tK" type="number" value="800" min="0" step="1"></div>
+              <div class="field"><label for="mul">サージ中の倍率</label><input id="mul" type="number" value="3" min="1" step="0.1"></div>
+            </div>
+            <div class="field"><label for="k">ダメージ係数（ゾーンの1%あたり毎秒）</label>
+              <input id="k" type="number" value="1" min="0" step="0.1"></div>
+          </div>
+        </details>
+        <div class="entry" id="entry"></div>
+        <button type="button" class="done" id="inDone">決定</button>
+      </div>
+
+    </div>
+    </details>
+  </section>
+
+  <section id="brkSec">
+    <h2><span class="mi">table_rows</span>区間ごとの内訳</h2>
+    <div class="panel tbl"><table>
+      <thead><tr><th>区間</th><th>残り（開始）</th><th>残り（終了）</th><th>毎秒</th><th>蓄積（開始）</th><th>蓄積（終了）</th><th>サージ人数</th><th>到達</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+  </section>
+
+  <section id="zoneSec">
+    <h2><span class="mi">table_chart</span>ゾーン別 サージ・最終警告</h2>
+    <div class="field" style="max-width:240px"><span class="tip">サージ人数の対象</span>
+      <div class="seg" role="group" aria-label="サージ人数の対象モード">
+        <button type="button" id="mSolo" aria-pressed="false">Solo</button>
+        <button type="button" id="mDuo" aria-pressed="true">Duo</button>
+      </div></div>
+    <div class="panel tbl"><table>
+      <thead><tr><th>ゾーン</th><th class="wide">半径</th><th>ダメージ</th><th class="wide">待機（開始）</th><th class="wide">収縮（開始）</th><th>サージ人数</th><th>サージ開始</th><th>最終警告</th></tr></thead>
+      <tbody id="zrows"></tbody>
+    </table></div>
+    <div class="aside"><span class="label">補足：</span>
+      <div style="margin-top:4px">サージ人数は、ストームサージ（ダメージや撃破の少ないチームが削られる仕組み）が発動する残り人数です。SoloとDuoには同じ値として、提供された表（ゾーン2〜3は90人超、4は78人超、5は64人超、6は54人超、7は44人超、8は40人超、9以降は30人超）を入れています。ゾーン0〜1は表にないため「なし」としています。SoloとDuoで違いがあれば、それぞれ、ゲーム内の値に合わせて書き換えられます。入力した値はこのブラウザに保存されます。</div>
+      <div style="margin-top:6px">出典：ユーザー提供の表（2026/10/5）</div>
+    </div>
+  </section>
+
+  <section id="noteSec">
+    <div class="point"><div class="label">★ポイント★</div>
+      <ul>
+        <li>ゾーン5（毎秒2）からゾーン6（毎秒5）に移るあたりで蓄積が一気に加速します</li>
+        <li>サージ開始後は毎秒ダメージが倍率ぶん増えるため、最終警告までの猶予は短くなります</li>
+      </ul>
+    </div>
+    <div class="aside"><span class="label">補足：</span>
+      <div style="margin-top:4px">スクリーンショットで確認できたのは、しきい値（500 / 600 / 800）、サージ中の倍率3倍、ゾーン表（半径・ダメージ%・待機・収縮時間）です。次の4点は確認できていないため、この計算機の仮定です。設定で変更できます。</div>
+      <ul style="margin:6px 0 0;padding-left:18px">
+        <li>ダメージ% 1あたり毎秒1ストームダメージが蓄積する</li>
+        <li>ゾーンNのダメージ%は、そのゾーンの待機と収縮の両方に適用される</li>
+        <li>サージ中の倍率は、蓄積の増え方に掛かる</li>
+        <li>「最終警告」はキルしきい値（800）に到達した時点とみなす</li>
+      </ul>
+      <div style="margin-top:6px">ゾーン表のスクリーンショットにはソロ・デュオの区別が写っていません。ソロとデュオのしきい値は同じ値でした。</div>
+    </div>
+  </section>
+
+  <section id="chartSec">
+    <h2><span class="mi">show_chart</span>蓄積ストームダメージの推移</h2>
+    <div class="panel"><div class="chart" id="chart"></div></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var ZONES = [
+    [0, "1.8km", 1, 60, 0], [1, "950m", 1, 110, 85], [2, "750m", 1, 60, 90], [3, "525m", 1, 50, 100],
+    [4, "325m", 1, 70, 85], [5, "200m", 2, 40, 70], [6, "100m", 5, 40, 70], [7, "50m", 8, 35, 60],
+    [8, "25m", 10, 20, 60], [9, "17m", 10, 0, 55], [10, "11m", 10, 0, 50], [11, "10m", 10, 0, 50], [12, "0cm", 10, 0, 90]
+  ];
+  var EMPTY13 = ["", "", "", "", "", "", "", "", "", "", "", "", ""];
+  var surgeMode = "duo";
+  var surgeData = { duo: ["なし", "なし", "90", "90", "78", "64", "54", "44", "40", "30", "30", "30", "30"], solo: ["なし", "なし", "90", "90", "78", "64", "54", "44", "40", "30", "30", "30", "30"] };
+  try {
+    var saved = JSON.parse(localStorage.getItem("ssc-surge-v3") || "null");
+    if (saved && saved.data && saved.data.duo && saved.data.solo && saved.data.duo.length === 13 && saved.data.solo.length === 13) {
+      surgeData = { duo: saved.data.duo.map(String), solo: saved.data.solo.map(String) };
+      if (saved.mode === "solo" || saved.mode === "duo") surgeMode = saved.mode;
+    }
+  } catch (e) {}
+  function saveSurge() { try { localStorage.setItem("ssc-surge-v3", JSON.stringify({ mode: surgeMode, data: surgeData })); } catch (e) {} }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;"); }
+  function setSurgeMode(m) {
+    surgeMode = m;
+    $("mSolo").setAttribute("aria-pressed", m === "solo" ? "true" : "false");
+    $("mDuo").setAttribute("aria-pressed", m === "duo" ? "true" : "false");
+    for (var i = 0; i < ZONES.length; i++) $("sg" + i).value = surgeData[m][i];
+    saveSurge();
+    render();
+  }
+  var info = [], segs = [], t = 0;
+  ZONES.forEach(function (z) {
+    var s = t, w = t + z[3], e = w + z[4];
+    info.push({ z: z[0], s: s, w: w, e: e, dmg: z[2] });
+    if (z[3] > 0) segs.push({ z: z[0], ph: "待機", s: s, e: w, dmg: z[2] });
+    if (z[4] > 0) segs.push({ z: z[0], ph: "収縮", s: w, e: e, dmg: z[2] });
+    t = e;
+  });
+  segs.push({ z: 12, ph: "最終円後", s: t, e: Infinity, dmg: 10 });
+
+  var $ = function (id) { return document.getElementById(id); };
+  var zs = $("zone");
+  ZONES.forEach(function (z) { var o = document.createElement("option"); o.value = z[0]; o.textContent = "Zone " + z[0]; if (z[0] === 1) o.selected = true; zs.appendChild(o); });
+
+  function num(id, d) { var v = parseFloat($(id).value); return isFinite(v) ? v : d; }
+  function parseT(s) {
+    s = (s || "").trim();
+    if (s.indexOf(":") >= 0) { var a = s.split(":"); return (parseFloat(a[0]) || 0) * 60 + (parseFloat(a[1]) || 0); }
+    var v = parseFloat(s); return isFinite(v) ? v : 0;
+  }
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function fmt(s) { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + pad(s % 60); }
+  function dur(s) { s = Math.round(s); var m = Math.floor(s / 60), r = s % 60; return m > 0 ? m + "分" + pad(r) + "秒" : r + "秒"; }
+  function num1(v) { return (Math.round(v * 10) / 10).toString(); }
+  function segAt(tm) { for (var i = 0; i < segs.length; i++) if (tm < segs[i].e) return segs[i]; return segs[segs.length - 1]; }
+  function zp(s) { return s.ph === "最終円後" ? "最終円後" : "Z" + s.z + " " + s.ph; }
+  function cd(s, tm) { return s.e === Infinity ? "+" + fmt(tm - s.s) : fmt(s.e - tm); }
+
+  function simulate(T0, A0, p) {
+    var thr = [
+      { key: "w", v: p.w }, { key: "i", v: p.i }, { key: "k", v: p.k }
+    ].sort(function (a, b) { return a.v - b.v; });
+    var ev = {}, rows = [], trace = [{ t: T0, a: A0 }];
+    var tm = T0, a = A0;
+    thr.forEach(function (x) { if (a >= x.v) ev[x.key] = { t: T0, a: a, pre: true, seg: segAt(T0) }; });
+    for (var si = 0; si < segs.length && !ev.k; si++) {
+      var sg = segs[si];
+      if (sg.e <= tm) continue;
+      var guard = 0;
+      while (tm < sg.e && !ev.k && guard++ < 10) {
+        var active = a >= p.i;
+        var rate = sg.dmg * p.coef * (active ? p.mul : 1);
+        if (rate <= 0) return { ev: ev, rows: rows, trace: trace };
+        var nt = null;
+        for (var q = 0; q < thr.length; q++) if (!ev[thr[q].key]) { nt = thr[q]; break; }
+        if (!nt) break;
+        var tc = tm + (nt.v - a) / rate;
+        var row = { seg: sg, t0: tm, a0: a, rate: rate, active: active, base: sg.dmg * p.coef };
+        if (tc <= sg.e) {
+          row.t1 = tc; row.a1 = nt.v; row.hit = nt.key;
+          tm = tc; a = nt.v;
+          ev[nt.key] = { t: tm, a: a, seg: sg };
+          trace.push({ t: tm, a: a });
+        } else {
+          row.t1 = sg.e; row.a1 = a + rate * (sg.e - tm);
+          tm = sg.e; a = row.a1;
+          trace.push({ t: tm, a: a });
+        }
+        rows.push(row);
+      }
+    }
+    return { ev: ev, rows: rows, trace: trace };
+  }
+
+  var CARDS = [
+    { key: "w", cls: "warn", icon: "warning", name: "警告" },
+    { key: "i", cls: "infl", icon: "sick", name: "サージ開始" },
+    { key: "k", cls: "kill", icon: "dangerous", name: "最終警告" }
+  ];
+  var NAME = { w: "警告", i: "サージ開始", k: "最終警告" };
+
+  var ITEM = 40, remSel = 40, wheelKey = "", wheelVals = [], wheelLock = false, wheelTimer = null, closeTimer = null;
+  function scheduleClose() {
+    if (!window.matchMedia || !window.matchMedia("(max-width: 760px)").matches) return;
+    clearTimeout(closeTimer);
+    closeTimer = setTimeout(function () { $("inDet").open = false; }, 900);
+  }
+  function markWheel(i) {
+    var kids = $("wheel").children;
+    for (var j = 0; j < kids.length; j++) { kids[j].className = j === i ? "on" : ""; kids[j].setAttribute("aria-selected", j === i ? "true" : "false"); }
+  }
+  function wheelIndex() { return Math.max(0, Math.min(wheelVals.length - 1, Math.round($("wheel").scrollTop / ITEM))); }
+  function buildWheel(len, key) {
+    var vals = [];
+    if (len % 10 !== 0) vals.push(len);
+    for (var v = Math.floor(len / 10) * 10; v >= 0; v -= 10) vals.push(v);
+    wheelVals = vals;
+    var best = 0;
+    vals.forEach(function (x, i) { if (Math.abs(x - remSel) < Math.abs(vals[best] - remSel)) best = i; });
+    remSel = vals[best];
+    var w = $("wheel"), h = "";
+    vals.forEach(function (x, i) { h += '<div role="option" data-i="' + i + '">' + fmt(x) + '</div>'; });
+    w.innerHTML = h;
+    wheelKey = key;
+    wheelLock = true;
+    w.scrollTop = best * ITEM;
+    markWheel(best);
+    setTimeout(function () { wheelLock = false; }, 150);
+  }
+  function setupWheel() {
+    var w = $("wheel");
+    w.addEventListener("scroll", function () {
+      if (wheelLock) return;
+      clearTimeout(closeTimer);
+      markWheel(wheelIndex());
+      clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(function () {
+        var v = wheelVals[wheelIndex()];
+        if (v !== undefined && v !== remSel) { remSel = v; render(); scheduleClose(); }
+      }, 80);
+    });
+    w.addEventListener("click", function (e) {
+      var d = e.target.closest ? e.target.closest("[data-i]") : null;
+      if (d) w.scrollTo({ top: parseInt(d.getAttribute("data-i"), 10) * ITEM, behavior: "smooth" });
+    });
+    w.addEventListener("keydown", function (e) {
+      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+      e.preventDefault();
+      var i = Math.max(0, Math.min(wheelVals.length - 1, wheelIndex() + (e.key === "ArrowUp" ? -1 : 1)));
+      w.scrollTo({ top: i * ITEM, behavior: "smooth" });
+    });
+  }
+
+  var ZIMG = {"5": {"w": 38, "h": 31, "src": "data:image/png;base64,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"}, "6": {"w": 39, "h": 32, "src": "data:image/png;base64,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"}, "7": {"w": 41, "h": 31, "src": "data:image/png;base64,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"}, "8": {"w": 48, "h": 32, "src": "data:image/png;base64,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"}};
+  function zimg(i) {
+    var m = ZIMG[i]; if (!m) return "";
+    return '<img class="zi" src="' + m.src + '" width="' + m.w + '" height="' + m.h + '" alt="Zone ' + i + ' の円の位置関係">';
+  }
+  function buildZoneTable() {
+    var h = "";
+    ZONES.forEach(function (z, i) {
+      h += '<tr id="zr' + i + '"' + (i === 0 ? " hidden" : "") + '><td>Z' + z[0] + '<span class="in" id="en' + i + '"></span>' + zimg(i) + '</td><td class="wide">' + z[1] + '</td><td>' + z[2] + '</td><td class="wide">' + (z[3] > 0 ? fmt(z[3]) : "―") + '</td><td class="wide">' + (z[4] > 0 ? fmt(z[4]) : "―") +
+        '</td><td><input class="sg" id="sg' + i + '" type="text" value="' + esc(surgeData[surgeMode][i]) + '" placeholder="未確認" aria-label="Zone ' + z[0] + ' のサージ人数"></td><td class="evc ci" id="ei' + i + '">―</td><td class="evc ck" id="ek' + i + '">―</td></tr>';
+    });
+    h += '<tr id="zrt" hidden><td>最終円後</td><td class="wide">―</td><td>10</td><td class="wide">―</td><td class="wide">―</td><td>―</td><td class="evc ci" id="eit">―</td><td class="evc ck" id="ekt">―</td></tr>';
+    $("zrows").innerHTML = h;
+    ZONES.forEach(function (zz, i) {
+      $("sg" + i).addEventListener("input", function () { surgeData[surgeMode][i] = this.value; saveSurge(); render(); });
+    });
+  }
+  function surgeOf(z) { var v = $("sg" + z).value.trim(); return v === "" ? "―" : (/^\d+$/.test(v) ? v + "人超" : v); }
+
+  function render() {
+    var z = parseInt($("zone").value, 10) || 0, zi = info[z];
+    var wl = ZONES[z][3], sl = ZONES[z][4];
+    var ph = $("ph").value;
+    if (ph === "w" && wl === 0) ph = "s";
+    if (ph === "s" && sl === 0) ph = "w";
+    $("ph").value = ph;
+    $("ph").options[0].disabled = wl === 0;
+    $("ph").options[1].disabled = sl === 0;
+    var len = ph === "w" ? wl : sl;
+    var wkey = z + ph;
+    if (wkey !== wheelKey) buildWheel(len, wkey);
+    var rem = Math.min(remSel, len);
+    $("remTip").textContent = "Zone " + z + " の" + (ph === "w" ? "待機" : "収縮") + "は " + fmt(len) + " からカウントダウンします。";
+    var T0 = (ph === "w" ? zi.w : zi.e) - rem;
+    var p = { w: num("tW", 500), i: num("tI", 600), k: num("tK", 800), mul: Math.max(1, num("mul", 3)), coef: Math.max(0, num("k", 1)) };
+    var A0 = Math.max(0, num("pre", 0));
+    var r = simulate(T0, A0, p);
+
+    var es = segAt(T0);
+    $("inSum").textContent = zp(es) + " " + cd(es, T0);
+    $("entry").innerHTML = "入る時点：<b>" + zp(es) + " " + cd(es, T0) + "</b>（毎秒 <b>" + num1(es.dmg * p.coef) + "</b>）";
+
+    var h = "";
+    CARDS.forEach(function (c) {
+      var e = r.ev[c.key];
+      h += '<div class="card ' + c.cls + '"><div class="tag"><span class="mi">' + c.icon + '</span>' + c.name + '</div>';
+      if (e) {
+        h += '<div class="zp">' + zp(e.seg) + '</div><div class="big">' + cd(e.seg, e.t) + '</div>';
+        h += '<div class="rel">' + (e.pre ? "入る前に到達済み" : "入ってから " + dur(e.t - T0)) + '</div>';
+        h += '<div class="sub">蓄積 ' + num1(e.a) + '</div>';
+      } else {
+        h += '<div class="big">―</div><div class="sub">毎秒ダメージが0のため到達しません</div>';
+      }
+      h += '</div>';
+    });
+    $("cards").innerHTML = h;
+
+    for (var j = 0; j <= 12; j++) { $("ei" + j).innerHTML = "―"; $("ek" + j).innerHTML = "―"; $("en" + j).textContent = ""; }
+    $("eit").innerHTML = "―"; $("ekt").innerHTML = "―";
+    var showZ0 = es.z === 0 && es.ph !== "最終円後", showT = false;
+    $("en" + es.z).textContent = " 入";
+    ["i", "k"].forEach(function (key) {
+      var e = r.ev[key]; if (!e) return;
+      var tail = e.seg.ph === "最終円後", id = tail ? "t" : String(e.seg.z);
+      if (id === "0") showZ0 = true;
+      if (tail) showT = true;
+      $("e" + key + id).innerHTML = e.pre ? "<b>入る前</b>" : '<span class="pl">' + e.seg.ph + "</span><b>" + cd(e.seg, e.t) + "</b>";
+    });
+    $("zr0").hidden = !showZ0;
+    $("zrt").hidden = !showT;
+
+    var rh = "";
+    r.rows.forEach(function (w) {
+      var ev = w.hit ? '<td class="ev ' + w.hit + '">' + NAME[w.hit] + '</td>' : '<td class="ev"></td>';
+      var rateTxt = w.active ? num1(w.base) + "×" + num1(p.mul) + " = " + num1(w.rate) : num1(w.rate);
+      rh += '<tr class="' + (w.active ? "sick" : "") + '"><td>' + zp(w.seg) + (w.active ? "（サージ中）" : "") + '</td><td>' + cd(w.seg, w.t0) + '</td><td>' + cd(w.seg, w.t1) + '</td><td>' + rateTxt + '</td><td>' + num1(w.a0) + '</td><td>' + num1(w.a1) + '</td><td>' + surgeOf(w.seg.z) + '</td>' + ev + '</tr>';
+    });
+    $("rows").innerHTML = rh;
+
+    drawChart(T0, A0, p, r);
+  }
+
+  function drawChart(T0, A0, p, r) {
+    var tr = r.trace, last = tr[tr.length - 1].t - T0;
+    var xmin = -Math.max(10, last * 0.03), xmax = Math.max(last * 1.04 + 10, 120);
+    var ymax = Math.max(p.k * 1.08, tr[tr.length - 1].a * 1.05, 100);
+    drawChart.last = [T0, A0, p, r];
+    var cw = $("chart").clientWidth || 360;
+    var W = Math.max(300, Math.round(cw)), H = W < 480 ? 300 : 320, L = 40, R = 16, T = 26, B = 30;
+    var X = function (v) { return L + (v - xmin) / (xmax - xmin) * (W - L - R); };
+    var Y = function (v) { return H - B - v / ymax * (H - T - B); };
+    var steps = [15, 30, 60, 120, 300, 600], st = 600;
+    for (var i = 0; i < steps.length; i++) if (xmax / steps[i] <= (W < 480 ? 5 : 8)) { st = steps[i]; break; }
+    var s = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="入ってからの蓄積ストームダメージのグラフ">';
+    s += '<rect x="' + L + '" y="' + T + '" width="' + (W - L - R) + '" height="' + (H - T - B) + '" fill="var(--panel)"/>';
+    info.forEach(function (z, idx) {
+      var z0 = z.s - T0, z1 = (idx === info.length - 1 ? 1e9 : z.e - T0);
+      var x0 = Math.max(z0, xmin), x1 = Math.min(z1, xmax);
+      if (x1 <= x0) return;
+      if (idx % 2 === 0) s += '<rect x="' + X(x0) + '" y="' + T + '" width="' + (X(x1) - X(x0)) + '" height="' + (H - T - B) + '" fill="var(--band)"/>';
+      var wl = z.w - T0;
+      if (wl > xmin && wl < xmax && z.w > z.s && z.e > z.w) s += '<line x1="' + X(wl) + '" x2="' + X(wl) + '" y1="' + T + '" y2="' + (H - B) + '" stroke="var(--line)" stroke-width="0.8" stroke-dasharray="2 3"/>';
+      if (X(x1) - X(x0) > 22) s += '<text class="zlab" x="' + (X(x0) + (X(x1) - X(x0)) / 2) + '" y="' + (T - 8) + '" text-anchor="middle">Z' + z.z + '</text>';
+    });
+    for (var g = 0; g <= xmax; g += st) {
+      s += '<line x1="' + X(g) + '" x2="' + X(g) + '" y1="' + T + '" y2="' + (H - B) + '" stroke="var(--line)" stroke-width="0.5"/>';
+      s += '<text class="ax" x="' + X(g) + '" y="' + (H - B + 16) + '" text-anchor="middle">+' + fmt(g) + '</text>';
+    }
+    [0, 200, 400, 600, 800, 1000].filter(function (v) { return v <= ymax; }).forEach(function (v) {
+      s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="var(--line)" stroke-width="0.5"/>';
+      s += '<text class="ax" x="' + (L - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + v + '</text>';
+    });
+    var th = [["w", p.w, "var(--caution)", "警告 " + p.w], ["i", p.i, "var(--coral)", "サージ開始 " + p.i], ["k", p.k, "var(--ng)", "最終警告 " + p.k]];
+    th.forEach(function (x) {
+      s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(x[1]) + '" y2="' + Y(x[1]) + '" stroke="' + x[2] + '" stroke-width="1.2" stroke-dasharray="5 4"/>';
+      s += '<text class="ax" x="' + (L + 6) + '" y="' + (Y(x[1]) - 4) + '" style="fill:' + x[2] + '">' + x[3] + '</text>';
+    });
+    s += '<polyline points="' + tr.map(function (q) { return X(q.t - T0) + "," + Y(q.a); }).join(" ") + '" fill="none" stroke="var(--navy-text)" stroke-width="2.5" stroke-linejoin="round"/>';
+    s += '<circle cx="' + X(0) + '" cy="' + Y(A0) + '" r="5" fill="var(--panel)" stroke="var(--navy-text)" stroke-width="2"/>';
+    s += '<text class="ax" x="' + (X(0) + 8) + '" y="' + (Y(A0) - 8) + '">入る</text>';
+    th.forEach(function (x) {
+      var e = r.ev[x[0]]; if (!e || e.pre) return;
+      s += '<circle cx="' + X(e.t - T0) + '" cy="' + Y(e.a) + '" r="5.5" fill="' + x[2] + '" stroke="var(--panel)" stroke-width="1.5"/>';
+      var ex = X(e.t - T0), left = ex > L + 120;
+      s += '<text class="ax" x="' + (left ? ex - 9 : ex + 9) + '" y="' + (Y(e.a) - 8) + '" text-anchor="' + (left ? "end" : "start") + '" style="fill:var(--text)">' + zp(e.seg).replace("最終円後", "終") + ' ' + cd(e.seg, e.t) + '</text>';
+    });
+    s += '</svg>';
+    $("chart").innerHTML = s;
+  }
+
+  buildZoneTable();
+  ["zone", "ph", "pre", "tW", "tI", "tK", "mul", "k"].forEach(function (id) {
+    $(id).addEventListener("input", render);
+    $(id).addEventListener("change", render);
+  });
+  setupWheel();
+  var det = $("inDet");
+  det.addEventListener("pointerdown", function () { clearTimeout(closeTimer); });
+  det.addEventListener("change", function () { clearTimeout(closeTimer); });
+  det.addEventListener("toggle", function () {
+    if (!det.open) return;
+    var i = wheelVals.indexOf(remSel); if (i < 0) i = 0;
+    wheelLock = true; $("wheel").scrollTop = i * ITEM; markWheel(i);
+    setTimeout(function () { wheelLock = false; }, 150);
+  });
+  $("inDone").addEventListener("click", function () { clearTimeout(closeTimer); det.open = false; });
+  $("mSolo").addEventListener("click", function () { setSurgeMode("solo"); });
+  $("mDuo").addEventListener("click", function () { setSurgeMode("duo"); });
+  $("mSolo").setAttribute("aria-pressed", surgeMode === "solo" ? "true" : "false");
+  $("mDuo").setAttribute("aria-pressed", surgeMode === "duo" ? "true" : "false");
+  window.addEventListener("resize", function () { if (drawChart.last) drawChart.apply(null, drawChart.last); });
+  render();
+})();
+</script>
