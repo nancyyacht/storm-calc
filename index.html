@@ -627,12 +627,14 @@ body:not(.live) #liveSec { display: none; }
 
   // ライブ：スタートを0秒とし、1分32秒でゾーン1開始（内部の経過秒は info[1].s から逆算してずらす）
   var LIVE_Z1 = 92, LIVE_DROP = 7, LIVE_OFF = info[1].s - LIVE_Z1;
+  // 試合の記録は sessionStorage に置く：リロードでは続き、タブやアプリを閉じるとリセットされる
   var live = { start: 0, log: [] };
+  try { localStorage.removeItem("ssc-live-v1"); } catch (e) {}
   try {
-    var lv = JSON.parse(localStorage.getItem("ssc-live-v1") || "null");
+    var lv = JSON.parse(sessionStorage.getItem("ssc-live-v2") || "null");
     if (lv && typeof lv.start === "number" && Array.isArray(lv.log)) live = { start: lv.start, log: lv.log.filter(function (x) { return typeof x === "number"; }) };
   } catch (e) {}
-  function saveLive() { try { localStorage.setItem("ssc-live-v1", JSON.stringify(live)); } catch (e) {} }
+  function saveLive() { try { sessionStorage.setItem("ssc-live-v2", JSON.stringify(live)); } catch (e) {} }
   var viewMode = "live";
   try { var vm = localStorage.getItem("ssc-mode-v1"); if (vm === "live" || vm === "calc") viewMode = vm; } catch (e) {}
 

@@ -10,7 +10,7 @@
 | 場所 | URL | 備考 |
 |---|---|---|
 | GitHub（本リポジトリ） | https://github.com/nancyyacht/storm-calc | `index.html` が正本。Pages 公開URL：`https://nancyyacht.github.io/storm-calc/`（2026-10-06 に表示を確認済み）。旧ユーザー名 `amuzaq` から変更済みで、旧URLは使えない |
-| claude.ai Artifact | https://claude.ai/artifact/Fe4fk5Bb8qqtpq6KV3wPU8（Version 22） | 公開時に `<!doctype>`・viewport が自動で付く。GitHub版はこれらを手書きで足してある |
+| claude.ai Artifact | https://claude.ai/artifact/Fe4fk5Bb8qqtpq6KV3wPU8（Version 23） | 公開時に `<!doctype>`・viewport が自動で付く。GitHub版はこれらを手書きで足してある |
 
 - 内容を直したら**両方**を更新する。Artifact は同じURLを指定して再公開すれば、リンクは変わらない（Artifact の `url` 指定が必要）。
 - Artifact側の元ファイルは、前のセッションの作業フォルダにあり、引き継がれない。GitHub の `index.html` から、先頭の `<!doctype>〜<head>` の手書き部分（`<meta name="viewport">` と末尾の `[hidden]` などの小さな `<style>`）を除いて公開する。
@@ -64,7 +64,7 @@
 - 予測は、ストーム内なら「このままいた場合」、外なら「今入った場合」。
 - 時間の補正ボタン（±1秒、±10秒）はゲーム時計だけをずらす。突入・脱出の記録は実時刻のまま。
 - リセットは2回押し（`confirm()` は Artifact 内で使えない可能性があるため）。
-- 状態は `localStorage` の `ssc-live-v1`（開始時刻と突入・脱出の時刻をミリ秒で保存）。画面を閉じても続きから再開できる。対応ブラウザでは画面のスリープを防ぐ（Wake Lock）。
+- 状態は `sessionStorage` の `ssc-live-v2`（開始時刻と突入・脱出の時刻をミリ秒で保存）。リロードや、スマホがページを読み込み直した場合は続きから。タブやアプリを閉じるとリセットされる（ユーザー指定、2026-10-08）。古い `localStorage` の `ssc-live-v1` は読み込み時に消す。対応ブラウザでは画面のスリープを防ぐ（Wake Lock）。
 - 計算モードの結果カードにも「開始から m:ss後」を追加した。
 - 並び順（変えないこと）：上部（経過時間・リセット・補正を詰めて表示）→ 現在／次のゾーン → 警告・サージ開始・最終警告の予測カード → ストームの状態とボタン。
 - ゾーンのカードは Z0〜Z12 を横一列に並べ、スマホで横にスライドできる（現在と次の2枚が見え、3枚目の端が少し見える）。スライド後、操作をやめて4秒たつと現在のゾーンに戻る。ゾーンが変わったときも自動で現在のゾーンへ移る。終了したゾーンは薄く表示。
